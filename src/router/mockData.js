@@ -62,7 +62,7 @@ const curUserPermittedRouters = [
             {
                 name: '新闻审核',
                 path: '/news/review',
-                component: () => import('@/views/newsManage/review'),//新闻审核组件，仅仅包含<router-view>
+                component: () => import('@/views/news/review/ReviewRouterView'),//新闻审核组件，仅仅包含<router-view>
                 iconCls: null,
                 parentId: 3,
                 meta: {

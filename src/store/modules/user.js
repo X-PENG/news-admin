@@ -1,14 +1,14 @@
 import { login, logout, getRoutes } from '@/api/user'
 import { getToken, setToken, removeToken, saveUserInfoInSessionStorage, removeUserInfoFromSessionStorage, getUserInfoFromSessionStorage } from '@/utils/auth'
 import { resetRouter, generateCompleteRouter } from '@/router'
-import curUserPermittedRouters from '@/router/mockData'
+import { formatRoutes } from '@/utils/menus'
 
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
     avatar: '',
-    completeRoutes: [],
+    completeRoutes: [],//保存当前用户完整的路由表，用于生成菜单栏
     routesInitialized: false//默认没有初始化当前用户的路由表
   }
 }
@@ -87,10 +87,10 @@ const actions = {
     console.log('查询用户可访问的路由表')
     return new Promise((resolve, reject) => {
       getRoutes().then((response) => {
-          console.log(response)
-          //查询结果
-          let queryRoutes = curUserPermittedRouters
-          let completeRoutes = generateCompleteRouter(queryRoutes)
+          //格式化路由表
+          let formattedRoutes = formatRoutes(response)
+          console.log(formattedRoutes)
+          let completeRoutes = generateCompleteRouter(formattedRoutes)
           commit('SET_ROUTES_INITIALIZED', true) 
           commit('SET_COMPLETE_ROUTES', completeRoutes)
           resolve()
