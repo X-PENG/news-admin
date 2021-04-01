@@ -122,7 +122,7 @@ export function generateCompleteRouter(curUserPermittedRouters) {
   // router.addRoutes(newRouter.options.routes) // 和上条语句作用相同！
   // curUserPermittedRouters.forEach(r => router.addRoute(r))// 和上面作用相同
 
-  console.log('生成完整的路由表')
+  // console.log('生成完整的路由表')
   //for debug
   // console.log('打印旧router')
   // let oldRouter = {};

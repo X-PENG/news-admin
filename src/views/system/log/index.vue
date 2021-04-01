@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="app-container">
         <h1>新闻操作日志</h1>
     </div>
 </template>

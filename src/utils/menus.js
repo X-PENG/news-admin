@@ -1,27 +1,27 @@
-import curUserPermittedRouters from '@/router/mockData'
+// import curUserPermittedRouters from '@/router/mockData'
 
-export const initMenus = (router, store)=>{
-    if(store.getters.completeRoutes.length > 0){
-        //说明是正常的跳转：用户在界面点击各种菜单。
-        console.log('store.state.routes.length > 0');
-        return;
-    }
-    router.addRoutes(curUserPermittedRouters)
-    // curUserPermittedRouters.forEach(e=>router.addRoute(e)) 
-    // getRequest("/system/config/menu").then(function(response) {
-    //     if(response){
-    //         let routes = response.data;
-    //         if(routes && routes.length > 0){
-    //             //对routes进行递归处理，将每个路由记录的component字段值转成组件对象。
-    //             let routesFormated = formatRoutes(routes);
-    //             //动态添加路由配置到router中
-    //             routesFormated.forEach(e=>router.addRoute(e));
-    //             //改变vuex的routes（只能提交mutation）
-    //             store.commit('initRoutes', routesFormated);
-    //         }
-    //     }
-    // });
-};
+// export const initMenus = (router, store)=>{
+//     if(store.getters.completeRoutes.length > 0){
+//         //说明是正常的跳转：用户在界面点击各种菜单。
+//         console.log('store.state.routes.length > 0');
+//         return;
+//     }
+//     router.addRoutes(curUserPermittedRouters)
+//     curUserPermittedRouters.forEach(e=>router.addRoute(e)) 
+//     getRequest("/system/config/menu").then(function(response) {
+//         if(response){
+//             let routes = response.data;
+//             if(routes && routes.length > 0){
+//                 //对routes进行递归处理，将每个路由记录的component字段值转成组件对象。
+//                 let routesFormated = formatRoutes(routes);
+//                 //动态添加路由配置到router中
+//                 routesFormated.forEach(e=>router.addRoute(e));
+//                 //改变vuex的routes（只能提交mutation）
+//                 store.commit('initRoutes', routesFormated);
+//             }
+//         }
+//     });
+// };
 
 
 /**
@@ -55,12 +55,35 @@ export const formatRoutes = (routes)=>{
         let afterFormat = {
             name: name,
             path: path,
-            component: () => {
+            //  webpack4中动态import不支持变量方式，改为使用require
+            // component: () => {
+            //     let suffix = '';
+
+            //     //若是一级子菜单，对应布局组件
+            //     if(path === '/'){
+            //         return import('../layout')//对应布局组件
+            //     }
+
+            //     suffix = path;//一般来说就是路径
+                
+            //     //若是审核组件
+            //     if(path.indexOf('review') !== -1){
+            //         suffix = '/news/review';
+            //         //是新闻审核子菜单，则对应的是ReviewRouterView组件
+            //         if(path === '/news/review'){
+            //             suffix += '/ReviewRouterView'
+            //         }
+            //     }
+
+            //     return import('../views' + suffix);
+            // },
+            component(resolve){
                 let suffix = '';
 
                 //若是一级子菜单，对应布局组件
                 if(path === '/'){
-                    return import('../layout')//对应布局组件
+                    require(['@/layout'], resolve)//对应布局组件
+                    return;
                 }
 
                 suffix = path;//一般来说就是路径
@@ -74,7 +97,7 @@ export const formatRoutes = (routes)=>{
                     }
                 }
 
-                return import('../views' + suffix);
+                require([`@/views${suffix}`], resolve)
             },
             meta: meta,
             children: children,

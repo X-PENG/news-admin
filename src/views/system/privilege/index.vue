@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="app-container">
         <h1>权限管理</h1>
     </div>
 </template>

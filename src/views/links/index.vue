@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="app-container">
         <h1>友情链接管理</h1>
     </div>
 </template>

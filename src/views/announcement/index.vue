@@ -1,6 +1,6 @@
 <template>
-  <div>
-      <h1>公共管理</h1>
+  <div class="app-container">
+      <h1>公告管理</h1>
   </div>
 </template>
 

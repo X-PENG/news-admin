@@ -89,7 +89,6 @@ const actions = {
       getRoutes().then((response) => {
           //格式化路由表
           let formattedRoutes = formatRoutes(response)
-          console.log(formattedRoutes)
           let completeRoutes = generateCompleteRouter(formattedRoutes)
           commit('SET_ROUTES_INITIALIZED', true) 
           commit('SET_COMPLETE_ROUTES', completeRoutes)

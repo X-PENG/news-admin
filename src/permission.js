@@ -1,11 +1,9 @@
 import router from './router'
 import store from './store'
-import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken, getUserInfoFromSessionStorage } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
-import { initMenus } from '@/utils/menus'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -24,7 +22,6 @@ router.beforeEach(async(to, from, next) => {
 
   //判断用户是否登录
   if (loginUser) {
-      // initMenus(router, store)
       /**
        * 判断用户可访问的路由表是否初始化了（是一个全局共享状态），
        * 没有初始化，就获取当前用户可访问的路由表，动态挂载路由，并且生成菜单
@@ -35,17 +32,17 @@ router.beforeEach(async(to, from, next) => {
       if(!store.getters.routesInitialized){
         //没有初始化，需要初始化用户信息以及用户可访问的路由
         store.dispatch('user/getInfo')
-        console.log('路由没有初始化，需要初始化路由')
+        // console.log('路由没有初始化，需要初始化路由') //for debug
         
         // for debug 证明了刷新时，会清空动态挂载的路由
         // let oldRouter = {}  
         // Object.assign(oldRouter, router)      
         // console.log(oldRouter)
         await store.dispatch('user/getPermittedRoutes')
-        console.log('初始化完毕')
+        // console.log('初始化完毕') //for debug
       }
 
-      console.log('继续导航')
+      // console.log('继续导航')//for debug
       if (to.path === '/login') {
         next({ path: '/' })//此时，不会触发全局前置守卫
         NProgress.done()
