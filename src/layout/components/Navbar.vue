@@ -7,7 +7,7 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="myAvatar3+'?imageView2/1/w/80/h/80'" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -31,6 +31,11 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
 export default {
+  data(){
+    return {
+      myAvatar1: undefined
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger
@@ -39,7 +44,20 @@ export default {
     ...mapGetters([
       'sidebar',
       'avatar'
-    ])
+    ]),
+    myAvatar2(){
+      if(!this.myAvatar1){
+        //没有初始化过，就初始化一下
+        console.log('初始化头像2')
+        //缓存下来
+        this.myAvatar1 = this.avatar
+      }
+      return this.avatar
+    },
+    myAvatar3(){
+        let result = !!this.myAvatar1 ?  this.myAvatar1 : this.myAvatar2
+        return result
+    }
   },
   methods: {
     toggleSideBar() {

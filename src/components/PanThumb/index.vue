@@ -6,13 +6,18 @@
       </div>
     </div>
     <!-- eslint-disable-next-line -->
-    <div :style="{backgroundImage: `url(${image})`}" class="pan-thumb"></div>
+    <div :style="{backgroundImage: `url(${myAvatar3})`}" class="pan-thumb"></div>
   </div>
 </template>
 
 <script>
 export default {
   name: 'PanThumb',
+  data(){
+    return {
+      myAvatar1: undefined
+    }
+  },
   props: {
     image: {
       type: String
@@ -28,6 +33,21 @@ export default {
     height: {
       type: String,
       default: '150px'
+    }
+  },
+  computed:{
+    myAvatar2(){
+      if(!this.myAvatar1){
+        //没有初始化过，就初始化一下
+        console.log('初始化头像1')
+        //缓存下来
+        this.myAvatar1 = this.image
+      }
+      return this.image
+    },
+    myAvatar3(){
+        let result = !!this.myAvatar1 ?  this.myAvatar1 : this.myAvatar2
+        return result
     }
   }
 }
