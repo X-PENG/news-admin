@@ -29,9 +29,40 @@ export function login(data) {
 
 export function getInfo(token) {
   return request({
-    url: '/vue-admin-template/user/info',
+    url: '/management/private/',
     method: 'get',
-    params: { token }
+  })
+}
+
+//修改用户基本信息
+export function updateInfo(token, newUserInfo) {
+  return request({
+    url: '/management/private/',
+    method: 'put',
+    data: newUserInfo
+  })
+}
+
+/**
+ * 修改用户密码
+ * @param {*} token 
+ * @param {*} newPassword  新的密码
+ * @returns 
+ */
+export function updatePassword(token, newPassword) {
+  return request({
+    url: '/management/private/key',
+    method: 'put',
+    data: newPassword,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    transformRequest: [
+      //自己将js对象序列化成key/value形式
+      function (data) {
+        return encodeURIComponent('newPassword')+'='+encodeURIComponent(data);
+      }
+    ]
   })
 }
 

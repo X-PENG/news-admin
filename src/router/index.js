@@ -62,7 +62,7 @@ const publicRoutes = [
       {
         name: '个人中心',
         path: '/private',
-        component: () => import('@/views/404'),//个人中心组件，出口必须是Layout组件
+        component: () => import('@/views/dropDownMenu/profile'),//个人中心组件，出口必须是Layout组件
       },
       {
         name: '修改密码',

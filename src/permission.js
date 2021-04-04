@@ -31,7 +31,7 @@ router.beforeEach(async(to, from, next) => {
       //用户信息是否被初始化
       if(!store.getters.routesInitialized){
         //没有初始化，需要初始化用户信息以及用户可访问的路由
-        store.dispatch('user/getInfo')
+        await store.dispatch('user/getInfo')
         // console.log('路由没有初始化，需要初始化路由') //for debug
         
         // for debug 证明了刷新时，会清空动态挂载的路由
