@@ -41,8 +41,14 @@ router.beforeEach(async(to, from, next) => {
           // console.log(oldRouter)
           await store.dispatch('user/getPermittedRoutes')
 
-          //注意：不能直接使用next()，否则会出现空白页面的bug
-          next({...to,replace: true})
+          /**
+           * 解决空白页面的bug。一定不能直接使用next()，否则会出现空白页面的bug。
+           * 为什么会解决空白页面bug呢？
+           *  因为next('/')或next({path:'/'})这种用法会中断当前的导航，然后进行一个新的导航
+           */
+          // next({...to,replace: true})
+          next({...to})
+          
         }else{
           next()
         }
