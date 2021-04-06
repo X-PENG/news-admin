@@ -1,6 +1,6 @@
 import { login, logout, getRoutes, getInfo, updateInfo } from '@/api/user'
 import { getToken, setToken, removeToken, saveUserInfoInSessionStorage, removeUserInfoFromSessionStorage, getUserInfoFromSessionStorage } from '@/utils/auth'
-import { resetRouter, generateCompleteRouter } from '@/router'
+import { resetRouter, mountAndGetCompleteRouter } from '@/router'
 import { formatRoutes } from '@/utils/menus'
 
 const getDefaultState = () => {
@@ -91,9 +91,9 @@ const actions = {
       getRoutes().then((response) => {
           //格式化路由表
           let formattedRoutes = formatRoutes(response)
-          let completeRoutes = generateCompleteRouter(formattedRoutes)
-          commit('SET_ROUTES_INITIALIZED', true) 
+          let completeRoutes = mountAndGetCompleteRouter(formattedRoutes)
           commit('SET_COMPLETE_ROUTES', completeRoutes)
+          commit('SET_ROUTES_INITIALIZED', true) 
           resolve()
       }).catch(error => {
         reject(error)

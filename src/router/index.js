@@ -68,6 +68,9 @@ const publicRoutes = [
   }
 ]
 
+
+const staticRoutes = [].concat(loginRoute, publicRoutes)
+
 /**
 * 没有匹配到的路由，就重定向到404页面。该路由必须放在路由表的最后！！！
 */
@@ -75,24 +78,20 @@ const notFoundRoute = { path: '*', redirect: '/404', hidden: true }
 
 //创建初始路由
 const createInitialRouter = () => new Router({
-  // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
-  //一开始只有登录路由
-  routes: [loginRoute].concat(publicRoutes)
+  routes: staticRoutes
 })
 
 const router = createInitialRouter()
 
 //创建完整路由
 const createCompleteRouer = (curUserPermittedRouters) => new Router({
-  // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
   //新的路由具有完整的路由表，完整路由表=loginRoute + publicRoutes + curUserPermittedRouters + notFoundRoute
-  routes: [].concat(loginRoute, publicRoutes, curUserPermittedRouters)
+  routes: staticRoutes.concat(curUserPermittedRouters)
 })
 
 
-// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createInitialRouter()
   //测试：是否可以清空路由。测试结果：可以清空路由！！！
@@ -101,36 +100,22 @@ export function resetRouter() {
   //   scrollBehavior: () => ({ y: 0 }),
   //   routes: []
   // })
-  router.matcher = newRouter.matcher // reset router。替换现有router的routes
+  router.matcher = newRouter.matcher // reset router
 
   //for debug
   // console.log('重置路由')
   // console.log(router)
 }
 
-//生成完整的路由表
-export function generateCompleteRouter(curUserPermittedRouters) {
+//挂载并获取完整的路由表
+export function mountAndGetCompleteRouter(curUserPermittedRouters) {
   //添加到动态加载的路由的末尾
   curUserPermittedRouters.push(notFoundRoute)
   const newRouter = createCompleteRouer(curUserPermittedRouters)
   router.matcher = newRouter.matcher // 替换完整的路由
   // router.addRoutes(newRouter.options.routes) // 和上条语句作用相同！
   // curUserPermittedRouters.forEach(r => router.addRoute(r))// 和上面作用相同
-
-  // console.log('生成完整的路由表')
-  //for debug
-  // console.log('打印旧router')
-  // let oldRouter = {};
-  // Object.assign(oldRouter, router);
-  // console.log(oldRouter)
-  // router.matcher = newRouter.matcher // 替换完整的路由表
-  // // router.addRoutes(newRouter.options.routes)// 和上面作用相同
-  // // curUserPermittedRouters.forEach(r => router.addRoute(r))// 和上面作用相同
-  // console.log('打印赋值后的router')
-  // console.log(router)
-  // console.log(router.options.routes)
-  // console.log('打印完整的路由表')
-  // console.log(newRouter.options.routes)
+  //返回完整的路由表
   return newRouter.options.routes
 }
 

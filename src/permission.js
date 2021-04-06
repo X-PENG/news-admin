@@ -10,6 +10,10 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
+  //for debug
+  // console.log('beforeEach')
+  // console.log(from)
+  // console.log(to)
   // start progress bar
   NProgress.start()
 
@@ -22,36 +26,28 @@ router.beforeEach(async(to, from, next) => {
 
   //判断用户是否登录
   if (loginUser) {
-      /**
-       * 判断用户可访问的路由表是否初始化了（是一个全局共享状态），
-       * 没有初始化，就获取当前用户可访问的路由表，动态挂载路由，并且生成菜单
-       * 初始化了，直接next()完成路由跳转
-       */
-
-      //用户信息是否被初始化
-      if(!store.getters.routesInitialized){
-        //没有初始化，需要初始化用户信息以及用户可访问的路由
-        await store.dispatch('user/getInfo')
-        // console.log('路由没有初始化，需要初始化路由') //for debug
-        
-        // for debug 证明了刷新时，会清空动态挂载的路由
-        // let oldRouter = {}  
-        // Object.assign(oldRouter, router)      
-        // console.log(oldRouter)
-        await store.dispatch('user/getPermittedRoutes')
-        // console.log('初始化完毕') //for debug
-      }
-
-      // console.log('继续导航')//for debug
       if (to.path === '/login') {
-        next({ path: '/' })//此时，不会触发全局前置守卫
+        next({ path: '/' })
         NProgress.done()
       }else{
-        next()
-      }
+        //用户信息是否被初始化
+        if(!store.getters.routesInitialized){
+          //没有初始化，需要初始化用户信息以及用户可访问的路由
 
+          await store.dispatch('user/getInfo')
+          // for debug 证明了刷新时，会清空动态挂载的路由
+          // let oldRouter = {}  
+          // Object.assign(oldRouter, router)      
+          // console.log(oldRouter)
+          await store.dispatch('user/getPermittedRoutes')
+
+          //注意：不能直接使用next()，否则会出现空白页面的bug
+          next({...to,replace: true})
+        }else{
+          next()
+        }
+      }
   } else {
-    console.log('没有登录')
     if (whiteList.indexOf(to.path) !== -1) {
       next()
     } else {
