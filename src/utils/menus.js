@@ -1,29 +1,3 @@
-// import curUserPermittedRouters from '@/router/mockData'
-
-// export const initMenus = (router, store)=>{
-//     if(store.getters.completeRoutes.length > 0){
-//         //说明是正常的跳转：用户在界面点击各种菜单。
-//         console.log('store.state.routes.length > 0');
-//         return;
-//     }
-//     router.addRoutes(curUserPermittedRouters)
-//     curUserPermittedRouters.forEach(e=>router.addRoute(e)) 
-//     getRequest("/system/config/menu").then(function(response) {
-//         if(response){
-//             let routes = response.data;
-//             if(routes && routes.length > 0){
-//                 //对routes进行递归处理，将每个路由记录的component字段值转成组件对象。
-//                 let routesFormated = formatRoutes(routes);
-//                 //动态添加路由配置到router中
-//                 routesFormated.forEach(e=>router.addRoute(e));
-//                 //改变vuex的routes（只能提交mutation）
-//                 store.commit('initRoutes', routesFormated);
-//             }
-//         }
-//     });
-// };
-
-
 /**
  * 之所以要格式化，是因为返回的路由表的component字段是字符串，要格式化成组件对象
  * 另外，约定：
@@ -92,7 +66,7 @@ export const formatRoutes = (routes)=>{
                 if(path.indexOf('review') !== -1){
                     suffix = '/news/review';
                     //是新闻审核子菜单，则对应的是ReviewRouterView组件
-                    if(path === '/news/review'){
+                    if(path === '#review'){
                         suffix += '/ReviewRouterView'
                     }
                 }
