@@ -48,7 +48,7 @@ export default {
     myAvatar2(){
       if(!this.myAvatar1){
         //没有初始化过，就初始化一下
-        console.log('初始化头像2')
+        // console.log('初始化头像2')
         //缓存下来
         this.myAvatar1 = this.avatar
       }

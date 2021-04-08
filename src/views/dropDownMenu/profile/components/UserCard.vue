@@ -37,7 +37,6 @@
 
 <script>
 import PanThumb from '@/components/PanThumb'
-import user from '@/store/modules/user'
 
 export default {
   components: { PanThumb },

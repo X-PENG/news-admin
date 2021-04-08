@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import router from '@/router'
+import { afterLogout } from '@/utils/logout'
 // import { MessageBox } from 'element-ui'
 // import store from '@/store'
 // import { getToken } from '@/utils/auth'
@@ -74,6 +76,10 @@ service.interceptors.response.use(
       type: 'error',
       duration: 3 * 1000
     })
+    if(error.response.data && error.response.data.code === '401'){
+      afterLogout()//清除用户状态
+      router.replace(`/login?redirect=${router.currentRoute.path}`)
+    }
     return Promise.reject(error)
   }
 )

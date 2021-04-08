@@ -1,7 +1,8 @@
 import { login, logout, getRoutes, getInfo, updateInfo } from '@/api/user'
-import { getToken, setToken, removeToken, saveUserInfoInSessionStorage, removeUserInfoFromSessionStorage, getUserInfoFromSessionStorage } from '@/utils/auth'
-import { resetRouter, mountAndGetCompleteRouter } from '@/router'
+import { getToken, setToken, removeToken, saveUserInfoInSessionStorage } from '@/utils/auth'
+import { mountAndGetCompleteRouter } from '@/router'
 import { formatRoutes } from '@/utils/menus'
+import { afterLogout } from '@/utils/logout'
 
 const getDefaultState = () => {
   return {
@@ -107,12 +108,7 @@ const actions = {
       logout(state.token).then(() => {
         // removeToken() // must remove  token  first
         console.log('注销成功')
-        //清除sessionStorage中保存的用户信息
-        removeUserInfoFromSessionStorage()
-        //重置路由
-        resetRouter()
-        //重置用户的全局状态
-        commit('RESET_STATE')
+        afterLogout()
         resolve()
       }).catch(error => {
         reject(error)
