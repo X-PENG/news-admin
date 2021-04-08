@@ -6,7 +6,7 @@
       <div :class="{'fixed-header':fixedHeader}">
         <navbar />
       </div>
-      <app-main />
+      <app-main v-loading="loadingForAppMain"/>
     </div>
   </div>
 </template>
@@ -40,6 +40,9 @@ export default {
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === 'mobile'
       }
+    },
+    loadingForAppMain(){
+      return this.$store.state.loadingForAppMain
     }
   },
   methods: {

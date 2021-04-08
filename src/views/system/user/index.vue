@@ -492,7 +492,7 @@ export default {
     },
     //查询数据
     queryData() {
-      console.log("queryData");
+      // console.log("queryData");
       this.listLoading = true;
       queryUserList(this.queryParam).then((resp) => {
         this.listLoading = false;

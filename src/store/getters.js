@@ -6,6 +6,6 @@ const getters = {
   name: state => state.user.name,
   routesInitialized: state => state.user.routesInitialized,
   completeRoutes: state => state.user.completeRoutes,
-  userInfo: state => state.user.userInfo
+  userInfo: state => state.user.userInfo,
 }
 export default getters

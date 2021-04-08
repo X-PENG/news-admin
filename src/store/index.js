@@ -13,6 +13,14 @@ const store = new Vuex.Store({
     settings,
     user
   },
+  state: {
+    loadingForAppMain: false//AppMain是否处于加载状态，默认为false
+  },
+  mutations: {
+    SET_LOADING_FOR_APP_MAIN(state, loadingStatus){
+      state.loadingForAppMain = loadingStatus
+    }
+  },
   getters
 })
 

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Message } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 import router from '@/router'
 import { afterLogout } from '@/utils/logout'
 // import { MessageBox } from 'element-ui'
@@ -76,7 +76,20 @@ service.interceptors.response.use(
       type: 'error',
       duration: 3 * 1000
     })
-    if(error.response.data && error.response.data.code === '401'){
+    let reLogin = false;//是否重新登录
+    if(error.response.status && error.response.status === 403){
+      MessageBox.confirm('禁止操作，是否重新登录？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        afterLogout()//清除用户状态
+        router.replace('/login')
+      })
+    }else if( error.response.data && (error.response.data.code === '401' || error.response.data.code === '403') ){
+      reLogin = true
+    }
+    if(reLogin){
       afterLogout()//清除用户状态
       router.replace(`/login?redirect=${router.currentRoute.path}`)
     }
