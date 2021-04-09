@@ -363,7 +363,7 @@ import {
   lockOrUnlockUser,
   delUser,
   addUser
-} from "@/api/userManager";
+} from "@/api/system/user";
 
 export default {
   name: "User",

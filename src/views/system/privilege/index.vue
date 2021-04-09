@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { roleList, menuTree, addRole, delRole, setResourceForRole, getAllResourceOfRole } from '@/api/roleManager'
+import { roleList, menuTree, addRole, delRole, setResourceForRole, getAllResourceOfRole } from '@/api/system/privilege'
 
     export default {
         name:'Privilege',
