@@ -6,7 +6,7 @@ import { afterLogout } from '@/utils/logout'
 // import store from '@/store'
 // import { getToken } from '@/utils/auth'
 
-// create an axios instance
+//创建axios对象，并自定义默认配置
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
