@@ -175,7 +175,7 @@
           ></el-switch>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="创建时间" min-width="100px">
+      <el-table-column align="center" label="创建时间" min-width="100">
         <template slot-scope="scope">
           {{ scope.row.createTime }}
         </template>
@@ -255,8 +255,6 @@
       ref="addUserForm"
       :model="addUserDialog.userInfo"
       :rules="addUserDialog.rules"
-      class="login-form"
-      auto-complete="on"
       label-position="right"
       label-width="80px"
     >
@@ -497,6 +495,12 @@ export default {
       queryUserList(this.queryParam).then((resp) => {
         this.listLoading = false;
         this.data = resp;
+      }).catch(error => {
+        this.listLoading = false;
+        this.$message({
+          message: '加载失败，未知异常！',
+          type: "error"
+        })       
       });
     },
     changeLockedStatus(row) {

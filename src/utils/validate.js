@@ -18,3 +18,20 @@ export function validUsername(str) {
   const valid_map = ['admin', 'editor']
   return valid_map.indexOf(str.trim()) >= 0
 }
+
+/**
+ * 验证字符串是否是数字
+ * @param {*} str 
+ */
+export function isNumber(str){
+  if(typeof(str) === 'number'){
+    return true
+  }
+
+  if(typeof(str) === 'string'){
+    let reg = /^[1-9]\d*$/
+    return reg.test(str)
+  }
+
+  return false
+}

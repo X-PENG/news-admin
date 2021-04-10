@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container" v-loading.fullscreen.lock="fullscreenLoading">
+    <div class="app-container">
       <el-form :inline="true" :model="roleInfoForAdd" class="header-form">
         <el-form-item>
           <el-input v-model="roleInfoForAdd.nameEn" placeholder="英文名">
@@ -115,6 +115,11 @@ import { roleList, menuTree, addRole, delRole, setResourceForRole, getAllResourc
                 roleList().then(resp => {
                   this.roles = resp.records
                   this.loading = false
+                }).catch(error => {
+                  this.$message({
+                    message: '加载失败，未知异常！',
+                    type: "error"
+                  })
                 })
             },
             initMenuTree(){
@@ -143,14 +148,14 @@ import { roleList, menuTree, addRole, delRole, setResourceForRole, getAllResourc
                 this.roleInfoForAdd.nameZh = this.roleInfoForAdd.nameZh.trim()
                 this.roleInfoForAdd.description = this.roleInfoForAdd.description.trim()
                 //校验表单
-                if(!this.roleInfoForAdd.nameEn){
+                if(!this.roleInfoForAdd.nameEn || !this.roleInfoForAdd.nameEn.trim()){
                   this.$message({
-                    message: '请输入角色英文名',
+                    message: '角色英文名不能为空或空格',
                     type: 'error'
                   })
-                }else if(!this.roleInfoForAdd.nameZh){
+                }else if(!this.roleInfoForAdd.nameZh || !this.roleInfoForAdd.nameZh.trim()){
                   this.$message({
-                    message: '请输入角色中文名',
+                    message: '角色中文名不能为空或空格',
                     type: 'error'
                   })
                 }else{
