@@ -32,9 +32,9 @@ export default {
   },
   methods: {
     getBreadcrumb() {
-      //有name的就是菜单
+      //有name的就是菜单，就显示在面包屑上，但是过滤掉“下拉菜单”这个父路由
       let matched = this.$route.matched.filter(
-        (item) => !!item.name
+        (item) => !!item.name && item.name !== '下拉菜单'
       );
       const first = matched[0];
 

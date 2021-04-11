@@ -1,4 +1,5 @@
 <template>
+<!-- 如果父路由hidden为true，则子路由一定不会被渲染成菜单 -->
   <div v-if="!item.hidden">
     <template v-if="showByMenuItem(item.children, item)">
       <app-link v-if="menuItem.path" :to="menuItem.path">
@@ -33,6 +34,7 @@ import Item from "./Item";
 import AppLink from "./Link";
 import FixiOSBug from "./FixiOSBug";
 
+// 该组件表示，一个路由是该渲染成菜单项还是菜单、还是不渲染成侧边栏菜单（hidden为true）
 export default {
   name: "SidebarItem",
   components: { Item, AppLink },
@@ -80,7 +82,7 @@ export default {
         });
       }
 
-      //没有孩子要显示，则渲染成菜单项
+      //没有孩子要显示，则将自己渲染成菜单项
       if (showingChildren.length === 0) {
         //显示parent自己
         this.menuItem = this.menuItem == null ? parent : this.menuItem;

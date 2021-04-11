@@ -93,6 +93,9 @@ const actions = {
           //格式化路由表
           let formattedRoutes = formatRoutes(response)
           let completeRoutes = mountAndGetCompleteRouter(formattedRoutes)
+          //for debug
+          // console.log('完整路由表')
+          // console.log(completeRoutes)
           commit('SET_COMPLETE_ROUTES', completeRoutes)
           commit('SET_ROUTES_INITIALIZED', true) 
           resolve()

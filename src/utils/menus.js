@@ -1,7 +1,8 @@
 /**
- * 之所以要格式化，是因为返回的路由表的component字段是字符串，要格式化成组件对象
- * 另外，约定：
- *      如果一级路由（parentId==null）的component不等于Layout，则把该路由作为如下 一级路由的子路由：
+ * 之所以要格式化，是因为后端返回的路由表的component字段是字符串，我们要格式化成组件对象或异步加载组件
+ * 另外，由于有些一级路由就是菜单项（比如，新闻栏目管理、公告管理、友情链接管理），但这种一级路由对应的组件不是Layout，又由于是一级路由，导致组件出口是<App/>组件的<router-view/>，显然是不行的，它们的出口应该是<AppMain>组件的<router-view/>才行，
+ * 所以约定：
+ *      如果一级路由（parentId==null）的component不等于Layout，则把该路由作为 Layout一级路由的子路由，保证该路由匹配到的组件出口是 AppMain组件的<router-view>：
  *          {
  *              path:'/', 
  *              component: () => import('@/layout')
@@ -18,7 +19,7 @@ export const formatRoutes = (routes)=>{
     }
 
     routes.forEach(routeRecord => {
-        let { name, path, component, meta, children, iconCls, parentId } = routeRecord;
+        let { name, path, component, meta, children, iconCls, parentId, hidden } = routeRecord;
         
         //有孩子就先递归处理children
         if(children && children instanceof Array){
@@ -75,11 +76,12 @@ export const formatRoutes = (routes)=>{
             },
             meta: meta,
             children: children,
+            hidden: hidden,
             iconCls: iconCls,
             parentId: parentId
         };
 
-        //代表该路由是一级路由
+        //如果该路由是一级路由
         if(parentId == null){
             //且一级路由的组件不是Layout，就把该路由作为Layout组件路由的子路由
             if(component !== 'Layout'){

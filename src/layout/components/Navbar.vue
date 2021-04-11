@@ -16,6 +16,11 @@
               个人中心
             </el-dropdown-item>
           </router-link>
+          <router-link to="/dropDownMenu/newsDrafts" v-if="hasNewsDraftsRoute">
+            <el-dropdown-item>
+              草稿箱
+            </el-dropdown-item>
+          </router-link>          
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">注销登录</span>
           </el-dropdown-item>
@@ -43,7 +48,8 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'hasNewsDraftsRoute'//是否具有草稿箱路由
     ]),
     myAvatar2(){
       if(!this.myAvatar1){
