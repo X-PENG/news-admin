@@ -35,3 +35,12 @@ export function isNumber(str){
 
   return false
 }
+
+/**
+ * @param {string} url
+ * @returns {Boolean}
+ */
+ export function validURL(url) {
+  const reg = /^(https?|ftp):\/\//
+  return reg.test(url)
+}
