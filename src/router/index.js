@@ -22,7 +22,7 @@ import Layout from '@/layout'
  */
 
 /**
- * 为登录时，只有登录路由
+ * 登录路由
  */
 const loginRoute = {
   path: '/login',
@@ -72,6 +72,11 @@ const publicRoutes = [
 const staticRoutes = [].concat(loginRoute, publicRoutes)
 
 /**
+ * 预览新闻的路由
+ */
+const previewNewsRoute = { path: '/news/preview', component: () => import('@/components/Preview'), hidden: true }
+
+/**
 * 没有匹配到的路由，就重定向到404页面。该路由必须放在路由表的最后！！！
 */
 const notFoundRoute = { path: '*', redirect: '/404', hidden: true }
@@ -85,10 +90,10 @@ const createInitialRouter = () => new Router({
 const router = createInitialRouter()
 
 //创建完整路由
-const createCompleteRouer = (curUserPermittedRouters) => new Router({
+const createCompleteRouer = (curUserPermittedRoutes) => new Router({
   scrollBehavior: () => ({ y: 0 }),
-  //新的路由具有完整的路由表，完整路由表=loginRoute + publicRoutes + curUserPermittedRouters + notFoundRoute
-  routes: staticRoutes.concat(curUserPermittedRouters)
+  //新的路由具有完整的路由表，完整路由表=loginRoute + publicRoutes + curUserPermittedRoutes + notFoundRoute
+  routes: staticRoutes.concat(curUserPermittedRoutes)
 })
 
 
@@ -108,13 +113,28 @@ export function resetRouter() {
 }
 
 //挂载并获取完整的路由表
-export function mountAndGetCompleteRouter(curUserPermittedRouters) {
-  //添加到动态加载的路由的末尾
-  curUserPermittedRouters.push(notFoundRoute)
-  const newRouter = createCompleteRouer(curUserPermittedRouters)
+export function mountAndGetCompleteRouter(curUserPermittedRoutes) {
+  /**
+   * 添加预览新闻的路由到路由表：如果路由表中有‘新闻管理路由’，就添加；
+   */
+  let tag = false
+  for(let i = 0; i < curUserPermittedRoutes.length; i++){
+    if(curUserPermittedRoutes[i].name === '新闻管理' && curUserPermittedRoutes[i].path === '/'){
+      tag = true
+      break
+    }
+  }
+  if(tag){
+    curUserPermittedRoutes.push(previewNewsRoute)
+  }
+
+  //添加not found路由到动态加载的路由的末尾
+  curUserPermittedRoutes.push(notFoundRoute)
+
+  const newRouter = createCompleteRouer(curUserPermittedRoutes)
   router.matcher = newRouter.matcher // 替换完整的路由
   // router.addRoutes(newRouter.options.routes) // 和上条语句作用相同！
-  // curUserPermittedRouters.forEach(r => router.addRoute(r))// 和上面作用相同
+  // curUserPermittedRoutes.forEach(r => router.addRoute(r))// 和上面作用相同
   //返回完整的路由表
   return newRouter.options.routes
 }

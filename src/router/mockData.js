@@ -1,7 +1,7 @@
 /**
 * 模拟用户可访问的路由表。根据用户的权限生成
 */
-const curUserPermittedRouters = [
+const curUserPermittedRoutes = [
     {
         name: '系统管理',
         path: '/',
@@ -96,4 +96,4 @@ const curUserPermittedRouters = [
     }
 ]
 
-export default curUserPermittedRouters
+export default curUserPermittedRoutes
