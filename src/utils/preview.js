@@ -25,10 +25,20 @@ export function removeNewsInfo(){
  * @param {*} queryParam 查询字符串 
  */
 export function jumpToPreviewPage(router, queryParam){
-    //跳转到预览新闻路由
+    /**
+     * router.resolve函数的返回值是一个对象：
+     *  {
+    *       location: Location;
+    *       route: Route;
+    *       href: string;
+     *  }
+     */
     let routeUrl = router.resolve({
         path: "/news/preview",
         query: queryParam   
     });
+    //for debug
+    // console.log('跳转到预览页面')
+    // console.log(routeUrl.href)//比如：#/news/preview?id=40&type=draft
     window.open(routeUrl.href, '_blank');  
 }

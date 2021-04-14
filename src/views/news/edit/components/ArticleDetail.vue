@@ -66,6 +66,7 @@ import BtnGroupForEditor from './BtnGroupForEditor'
 import BtnGroupForReviewer from './BtnGroupForReviewer'
 import { saveNewsInfo, jumpToPreviewPage } from '@/utils/preview'
 import { createOrSaveNewsAsDraftOrCompleted } from '@/api/news/inputter'
+import { validURL } from '@/utils/validate'
 
 function getDefaultForm(){
   return {
@@ -192,10 +193,25 @@ export default {
     },
     handlePreview(){
       console.log('监听到子组件的preview事件')
-      //将title、content存储到vuex中，全局共享，以便共享数据
-      saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
-      //跳转到预览新闻页面
-      jumpToPreviewPage(this.$router, {})
+      let externalUrl = this.postForm.externalUrl
+      if(externalUrl) {
+          //如果设置了外链，就跳转到外网
+          //先校验外链
+          if(!validURL(externalUrl)) {
+            this.$message({
+              message: '请填写正确的外链',
+              type: 'error'
+            })
+          }else {
+            //是外链，才跳转
+            window.open(externalUrl, '_blank'); 
+          }
+      }else {
+        //先将新闻信息存储到localStorage中，全局共享，以便预览新闻组件可以获得新闻信息进行显示
+        saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
+        //跳转到预览新闻页面
+        jumpToPreviewPage(this.$router, {})
+      }
     },
     handleCreateNewNews(){
       //继续向父组件发射事件

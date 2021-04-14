@@ -281,8 +281,14 @@ function getDefaultQueryParam() {
             handlePreview(){
                 let selectedNewId = this.validateIfSelecteRow('预览')
                 if(selectedNewId){
-                    //预览id为selectedNewId的草稿
-                    jumpToPreviewPage(this.$router, {id: selectedNewId, type: 'draft'})
+                    let externalUrl = this.curOperatedRow.externalUrl
+                    if(externalUrl) {
+                        //如果设置了外链，就跳转到外网
+                        window.open(externalUrl, '_blank'); 
+                    }else {
+                        //预览id为selectedNewId的草稿
+                        jumpToPreviewPage(this.$router, {id: selectedNewId, type: 'draft'})
+                    }
                 }
             }
         }
