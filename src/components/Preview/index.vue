@@ -1,10 +1,10 @@
 <template>
     <div class="preview-container">
-        <div class="peng-news-show-container">
+        <div class="peng-news-show-container" v-loading='loading'>
             <!-- 江财heahder -->
             <!-- <el-row>
                 <el-col :span="24">
-                    <p style="text-align:center; font-size:20px; font-weight:bold; color:#0066CC;"><span style="font-size:24px">{{ title }}</span></p>
+                    <p style="text-align:center; font-size:20px; font-weight:bold; color:#0066CC;"><span style="font-size:24px">{{ newsInfo.title }}</span></p>
                 </el-col>
                 <el-col :span="24">
                     <p style="text-align:center; height:28px; line-height:28px; background:#F0F0F0; border:1px dashed #CCCCCC; margin-top:5px;">
@@ -17,7 +17,7 @@
 
             <el-row class="peng-news-show-header">
                 <el-col :span="24" class="articleTitle">
-                    <h3> {{ title }} </h3>		 					
+                    <h3> {{ newsInfo.title }} </h3>		 					
                 </el-col>
                 <el-col :span="24" class="articleAuthor">
 						<p>
@@ -32,7 +32,7 @@
                 </el-col>
             </el-row> 
 
-            <div class="peng-news-show-content" v-html="content">
+            <div class="peng-news-show-content" v-html="newsInfo.content">
             </div>			
         </div> 
     </div>
@@ -40,28 +40,135 @@
 </template>
 
 <script>
-import { getNewsInfo } from '@/utils/preview'
+import { getNewsInfo, removeNewsInfo } from '@/utils/preview'
+import { selectDraft } from '@/api/news/inputter'
 
-const title = '我校在校友会系列榜单中表现亮眼'
-const content = `<p style="text-indent: 2em;">春风送暖，万物生辉。4月7日下午，省妇联二级巡视员李景芝等人到我校开展&ldquo;送奖到岗位到基层&rdquo;活动，为校工会授予&ldquo;全国巾帼文明岗&rdquo;奖牌。校党委书记卢福财、副校长刘小丽出席活动。</p><p style="text-align: center;"><img src="http://news.jxufe.edu.cn/uploadfile/82/1617935311802.jpg" alt="" width="640" height="361" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;春风送暖，万物生辉。4月7日下午，省妇联二级巡视员李景芝等人到我校开展&ldquo;送奖到岗位到基层&rdquo;活动，为校工会授予&ldquo;全国巾帼文明岗&rdquo;奖牌。校党委书记卢福财、副校长刘小丽出席活动。</p><p align="center"><img src="http://news.jxufe.edu.cn/uploadfile/82/1617935330085.jpg" alt="" width="640" height="427" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;卢福财对李景芝一行的到来表示热烈欢迎，向多年来重视关心支持&ldquo;巾帼文明岗&rdquo;创建工作的省妇联领导和同志们表示衷心感谢。他希望学校工会以此为契机，总结工会工作经验，再接再厉，更好地为全校教职员工服务。</p><p style="text-align: center;"><img src="http://news.jxufe.edu.cn/uploadfile/82/1617935323229.jpg" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;省妇联为我校颁发&ldquo;全国巾帼文明岗&rdquo;奖牌。</p><p style="text-align: center;"><img src="http://news.jxufe.edu.cn/uploadfile/82/1617935316371.jpg" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;李景芝代表省妇联对校工会取得的优异成绩给予充分肯定，希望校工会作为先进集体能继续发挥好带头示范作用，引领全校女职工在各自的岗位上努力奋斗，书写人生美好篇章。</p><p style="text-align: center;"><img src="http://news.jxufe.edu.cn/uploadfile/82/Attachment/c954a0b2b1.jpg" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;授牌仪式结束后，江西省妇联女科技工作者协会（简称&ldquo;省女科协&rdquo;）七届二次理事会召开。</p><p style="text-align: center;"><img src="http://news.jxufe.edu.cn/uploadfile/82/Attachment/432deb8426.jpg" /></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;刘小丽对省女科协七届二次理事会在我校举行表示祝贺，对省女科协一直以来对我校的关心和支持表示衷心感谢，并预祝会议取得圆满成功。</p><p>　　会后，与会人员参观了图书馆。校工会、女工委代表、省妇联组联部同志们参加了此次活动。（文/唐磊雯&nbsp; 图/刘建芳&nbsp; 编辑/姜莹&nbsp; 范毅洲）</p>`
+const apiMap = {
+    draft: selectDraft,//草稿对应的api是selectDraft
+}
+
+function getDefaultNewsInfo(){
+    return {
+        title: '',
+        content: ''
+    }
+} 
 
     export default {
         name:'Preview',
         data() {
             return {
-                title: '',
-                content: ''
+                loading: false,
+                newsInfo: getDefaultNewsInfo(),
+                //进入预览组件时的初始路由查询字符串，防止用户手动更改路由
+                initRouteQueryParam: undefined,
+                //如果是查询新闻进行显示，就封装新闻id和对应的api函数
+                query: {
+                    id: null,
+                    queryApi: null
+                }
             }
         },
-        created(){
+        computed: {
+            //是否从后台查询新闻进行初始化
+            isInitByQueryNews: {
+                get(){
+                    try{
+                       return this.judgeIsInitByQuertNews()
+                    }catch(e){
+                        this.$message({
+                            message: e,
+                            type: 'error'
+                        })
+                        //返回undefined表示异常，则不进行初始化
+                        return undefined
+                    }
+                }
+            }
+        },
+        watch: {
+            //监听路由的变化，不允许用户手动修改路由参数
+            $route(newRoute){
+                //新路由的查询字符串
+                let newRouterQueryStr = JSON.stringify(newRoute.query)
+                //如果用户手动修改了路由参数，那就报错，并回到之前的路由
+                if(this.initRouteQueryParam !== newRouterQueryStr) {
+                    //报错，但显示的内容不变
+                    this.$message({
+                        message: '禁止用户手动更改路由参数！',
+                        type: 'error'
+                    })
+                    //回到原来的路由
+                    this.$router.back()
+                }
+                return                
+            }
+        },
+        created() {
+            //保存初始路由的查询字符串
+            this.initRouteQueryParam = JSON.stringify(this.$route.query)
             this.initNews()
         },
         methods: {
+            /**
+             * 判断是从后台查询新闻进行初始化，还是从localStorage中查询新闻进行初始化。
+             * id参数，表示从后台查询哪个新闻；
+             * type参数，表示是查询草稿、中转还是审核状态的新闻
+             */
+            judgeIsInitByQuertNews(){
+                let queryParam = this.$route.query
+                let id = queryParam['id']
+                let type = queryParam['type']
+                //有id、有type，就查询数据库
+                if(id && type) {
+                    if(type === 'draft') {
+                        this.query.id = id
+                        this.query.queryApi = apiMap[type]
+                        return true
+                    }else {
+                        throw new Error("未知的type参数!")
+                    }
+                }
+                //没有任何参数，就查询localStorage
+                if(JSON.stringify(queryParam) === '{}'){
+                    return false
+                }
+
+                throw new Error("路由参数异常!")
+            },
             initNews(){
-                console.log('初始化新闻')
-                let news = getNewsInfo()
-                this.title = news.title
-                this.content = news.content
+                if(this.isInitByQueryNews === undefined) {
+                    console.log('未知的初始化方式！')
+                    return
+                }
+                
+                //开始初始化
+                this.loading = true
+                if(!this.isInitByQueryNews){
+                    console.log('查询localStorage进行初始化')
+                    this.newsInfo = getNewsInfo()
+                    this.loading = false
+                }else {
+                    console.log('查询数据库进行初始化')
+                    this.query.queryApi(this.query.id).then(resp => {
+                        if(!resp) {
+                            this.$message({
+                                message: '加载失败！可能原因：新闻不存在或没有查询权限。',
+                                type: 'error'
+                            })
+                            this.loading = false
+                            return
+                        }
+                        this.newsInfo = resp
+                        this.loading = false
+                    }).catch(errpr => {
+                        this.$message({
+                            message: '加载失败！',
+                            type: 'error'
+                        })
+                        this.loading = false
+                    })
+                }
             }
         },
     }
@@ -77,6 +184,7 @@ const content = `<p style="text-indent: 2em;">春风送暖，万物生辉。4月
     justify-content: center;  
     flex-wrap: wrap;
     background: url(http://news.jxufe.edu.cn/statics/news/images/bg.gif) repeat-x #e4f1f9;
+    min-height: 100%;
 }
 .peng-news-show-container {
     width: 65%;

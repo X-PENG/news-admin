@@ -1,13 +1,13 @@
 <template>
     <sticky :z-index="10" :class-name="'sub-navbar'">
         <SourceUrlDropdown v-model="curExternalUrl" />
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="save">
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" icon="el-icon-document-checked" @click="save">
             保存
         </el-button>
-        <el-button v-loading="loading" type="primary" @click="submit">
+        <el-button v-loading="loading" type="primary" icon="el-icon-check" @click="submit">
             提交审核
         </el-button>
-        <el-button v-loading="loading" type="warning" @click="preview">
+        <el-button v-loading="loading" type="warning" icon="el-icon-view" @click="preview">
             预览
         </el-button>
     </sticky>

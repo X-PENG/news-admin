@@ -1,16 +1,21 @@
 <template>
-  <article-detail :is-edit="isEdit" :current-btn-group="currentBtnGroup" :key="componentKey"/>
+  <article-detail :is-edit="isEdit" :current-btn-group="currentBtnGroup" :fetchDataAPI="fetchAPIMap[currentBtnGroup]" :key="componentKey" @create-new-news="handleCreateNewNews"/>
 </template>
 
 <script>
 import ArticleDetail from './components/ArticleDetail'
-import {isNumber} from '@/utils/validate'
- 
+import { isNumber } from '@/utils/validate'
+import { selectDraft } from '@/api/news/inputter' 
+
+/**
+ * type和按钮组的映射
+ */
 const btnGroupMap = {
   'inputter': 'btn-group-for-inputter',
   'editor': 'btn-group-for-editor',
   'reviewer': 'btn-group-for-reviewer', 
 }
+
 
 export default {
   name: "NewsEdit",
@@ -18,19 +23,25 @@ export default {
   data() {
     return {
       componentKey_prefix: 'article-detail',
-      componentKey: 'article-detail'
+      componentKey: 'article-detail',
+      //按钮组和fetchDataAPI的映射
+      fetchAPIMap: {
+        'btn-group-for-inputter': selectDraft,//传稿人编辑草稿时的查询api
+      }
     };
   },
   computed: {
     isEdit(){
       console.log('计算isEdit属性')
-      let type = this.$route.query['type']
       let id = this.$route.query['id']
+      let type = this.$route.query['type']
       let reviewLevel = this.$route.query['reviewLevel']
-      //如果是编辑一个新闻，那就是true
+      //如果是编辑一个新闻，且路由参数符合规范，那就是true
       if(isNumber(id) && (type === 'draft' || type === 'transit' || (type === 'review' && isNumber(reviewLevel)))){
         return true
       }
+      //否则，不是编辑新闻，那就重新回到 '撰写新闻'路由
+      this.$router.replace( { name: '撰写新闻', query:{} } )
       return false
     },
     currentBtnGroup(){
@@ -61,6 +72,18 @@ export default {
       this.componentKey = this.componentKey_prefix + new Date().getTime()
     }
   },
+  methods: {
+    handleCreateNewNews() {
+      let queryStr = JSON.stringify(this.$route.query)
+      //如果有路由参数，那就只要重新导航到 撰写新闻组件
+      if(queryStr !== '{}') {
+        this.$router.replace({name: '撰写新闻', query: {} })
+      }else {
+        //监听到创建新新闻的事件，就更新Key，重新刷新撰写新闻组件
+        this.componentKey = this.componentKey_prefix + new Date().getTime()
+      }
+    }
+  }
 };
 </script>
 

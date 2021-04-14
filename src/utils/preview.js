@@ -12,4 +12,23 @@ export function getNewsInfo(){
         return { title: '', content: '' }
     }
     return JSON.parse(newsInfo)
-}    
+} 
+
+
+export function removeNewsInfo(){
+    window.localStorage.removeItem("newsForPreview")
+} 
+
+/**
+ * 跳转到预览新闻的页面
+ * @param {*} router vue-router对象
+ * @param {*} queryParam 查询字符串 
+ */
+export function jumpToPreviewPage(router, queryParam){
+    //跳转到预览新闻路由
+    let routeUrl = router.resolve({
+        path: "/news/preview",
+        query: queryParam   
+    });
+    window.open(routeUrl.href, '_blank');  
+}

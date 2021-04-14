@@ -1,5 +1,5 @@
 <template>
-  <div class="createPost-container">
+  <div class="createPost-container" v-loading="loadingForEdit">
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container" label-position='left'>
 
       <component
@@ -7,6 +7,7 @@
         :externalUrl.sync="postForm.externalUrl"
         @save-by-inputter="handleSaveByInputter" 
         @submit-by-inputter="handleSubmitByInputter"
+        @create-new-news="handleCreateNewNews"
         @preview="handlePreview"
         @save-by-editor="handleSaveByEditor"
         @submit-by-editor="handleSubmitByEditor"
@@ -29,12 +30,12 @@
               <el-row type="flex" :gutter="20">
                 <el-col :span="12">
                   <el-form-item label-width="80px" label="文字来源:">
-                    <el-input v-model="postForm.article_source" placeholder="文字来源"></el-input>
+                    <el-input v-model="postForm.articleSource" placeholder="文字来源"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label-width="80px" label="图片来源:">
-                    <el-input v-model="postForm.img_source" placeholder="图片来源"></el-input>
+                    <el-input v-model="postForm.imgSource" placeholder="图片来源"></el-input>
                   </el-form-item>
                 </el-col>                
               </el-row>
@@ -63,15 +64,18 @@ import { SourceUrlDropdown } from './Dropdown'
 import BtnGroupForInputter from './BtnGroupForInputter'
 import BtnGroupForEditor from './BtnGroupForEditor'
 import BtnGroupForReviewer from './BtnGroupForReviewer'
-import { saveNewsInfo } from '@/utils/preview'
+import { saveNewsInfo, jumpToPreviewPage } from '@/utils/preview'
+import { createOrSaveNewsAsDraftOrCompleted } from '@/api/news/inputter'
 
-const defaultForm = {
-  id: null,
-  title: '', // 文章题目
-  content: '', // 文章内容
-  img_source: null,
-  article_source: null,
-  externalUrl: null
+function getDefaultForm(){
+  return {
+    id: null,
+    title: null, // 文章题目
+    content: null, // 文章内容
+    imgSource: null,
+    articleSource: null,
+    externalUrl: null
+  }
 }
 
 export default {
@@ -85,11 +89,15 @@ export default {
     currentBtnGroup: {
       type: String,
       default: ''
+    },
+    fetchDataAPI: {
+      type: Function,
+      default: null
     }
   },
   data() {
     const validateTitle = (rule, value, callback) => {
-      if (value.trim() === '') {
+      if (!value || value.trim() === '') {
         let msg = '标题不能为空'
         this.$message({
           message: msg,
@@ -101,37 +109,50 @@ export default {
       }
     }
     return {
-      postForm: Object.assign({}, defaultForm),
-      loading: false,
-      userListOptions: [],
+      loadingForEdit: false,
+      postForm: getDefaultForm(),
       rules: {
         title: [{ validator: validateTitle }],
       },
-      tempRoute: {}
     }
   },
   created() {
+    console.log('ArticleDetail组件的created钩子')
     if (this.isEdit) {
       console.log('编辑文章')
-      const id = this.$route.params && this.$route.params.id
+      console.log('fetchDataAPI')
+      console.log(this.fetchDataAPI)
+      const id = this.$route.query && this.$route.query.id
+      //如果是编辑新闻，那就先查询新闻
       this.fetchData(id)
     }
-
-    // Why need to make a copy of this.$route here?
-    // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
-    // https://github.com/PanJiaChen/vue-element-admin/issues/1221
-    this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
     fetchData(id) {
-      /**
-       * todo 根据type，查询草稿、中转新闻、n审中的新闻，会使用不同的接口  
-       */
-    },
-    setTagsViewTitle() {
-      const title = 'Edit Article'
-      const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.id}` })
-      this.$store.dispatch('tagsView/updateVisitedView', route)
+      this.loadingForEdit = true
+      this.fetchDataAPI(id).then(resp => {
+        if(!resp) {
+            this.$message({
+                message: '加载失败！可能原因：新闻不存在或没有查询权限。',
+                type: 'error'
+            })
+            this.loadingForEdit = false
+            return
+        }
+        console.log('查询草稿成功')
+        //查到了新闻
+        let { id, title, content, imgSource, articleSource, externalUrl } = resp
+        //填充id，则保存就是更新操作
+        this.postForm.id = id
+        this.postForm.title = title
+        this.postForm.content = content
+        this.postForm.imgSource = imgSource
+        this.postForm.articleSource = articleSource
+        this.postForm.externalUrl = externalUrl
+        this.loadingForEdit = false
+      }).catch(error => {
+        this.loadingForEdit = false
+      })
     },
     setPageTitle() {
       const title = 'Edit Article'
@@ -140,7 +161,7 @@ export default {
     validateForm(){
       let success
       this.$refs.postForm.validate(validateResult => {
-          success=validateResult
+          success = validateResult
       })
       return success
     },
@@ -149,20 +170,36 @@ export default {
       // console.log('监听到子组件的save-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
         console.log(this.postForm)
+        createOrSaveNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
+          if(resp) {
+            //如果是创建草稿，就会返回新创建的新闻的id
+            console.log('新的新闻的id = ' + resp)
+            //将新草稿的id赋给到this.postForm中，表示接下来的保存/上传操作将携带id，是更新操作
+            this.postForm.id = resp
+          }
+        })
       }
     },
-    handleSubmitByInputter(evnt){
+    handleSubmitByInputter(){
       // console.log('监听到子组件的submit-by-inputter事件 外链='+this.postForm.externalUrl)
+      if(this.validateForm()){
+        console.log(this.postForm)
+        createOrSaveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
+            //上传成功后，就向父组件发射创建新闻的事件
+            this.$emit('create-new-news')
+        })
+      }      
     },
     handlePreview(){
       console.log('监听到子组件的preview事件')
       //将title、content存储到vuex中，全局共享，以便共享数据
       saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
-      //跳转到预览新闻路由
-      let routeUrl = this.$router.resolve({
-           path: "/news/preview"
-      });
-      window.open(routeUrl.href, '_blank');      
+      //跳转到预览新闻页面
+      jumpToPreviewPage(this.$router, {})
+    },
+    handleCreateNewNews(){
+      //继续向父组件发射事件
+      this.$emit('create-new-news')
     },
     handleSaveByEditor(){
       // console.log('监听到子组件的save-by-editor事件 外链='+this.postForm.externalUrl)
