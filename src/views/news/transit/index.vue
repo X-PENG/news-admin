@@ -128,6 +128,7 @@
         :data="data.records"
         @sort-change="handleSortChange"
         @current-change="handleTableCurRowChange"
+        stripe
         border
         fit
         highlight-current-row
