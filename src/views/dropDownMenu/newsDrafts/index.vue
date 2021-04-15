@@ -296,8 +296,7 @@ function getDefaultQueryParam() {
 </script>
 
 <style>
-.oprerate-btn-group{
-    margin-top: 10px;
-    margin-bottom: 20px;
+.el-table th.gutter {
+  display: table-cell !important;
 }
 </style>

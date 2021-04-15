@@ -5,7 +5,7 @@
             保存
         </el-button>
         <el-button v-loading="loading" type="primary" icon="el-icon-check" @click="submit">
-            提交审核
+            保存并送审
         </el-button>
         <el-button v-loading="loading" type="warning" icon="el-icon-view" @click="preview">
             预览
@@ -44,15 +44,12 @@ import { SourceUrlDropdown } from './Dropdown'
         },
         methods: {
             save(){
-                console.log('保存修改')
                 this.$emit('save-by-editor')
             },
             submit(){
-                console.log('提交审核')
                 this.$emit('submit-by-editor')
             },
             preview(){
-                console.log('预览')
                 this.$emit('preview')
             }
         }

@@ -5,7 +5,8 @@
 <script>
 import ArticleDetail from './components/ArticleDetail'
 import { isNumber } from '@/utils/validate'
-import { selectDraft } from '@/api/news/inputter' 
+import { selectDraft } from '@/api/news/inputter'
+import { selectTransitNews } from '@/api/news/editor'
 
 /**
  * type和按钮组的映射
@@ -27,6 +28,7 @@ export default {
       //按钮组和fetchDataAPI的映射
       fetchAPIMap: {
         'btn-group-for-inputter': selectDraft,//传稿人编辑草稿时的查询api
+        'btn-group-for-editor': selectTransitNews//中转新闻查询api 
       }
     };
   },

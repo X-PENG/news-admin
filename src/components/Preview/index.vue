@@ -40,11 +40,13 @@
 </template>
 
 <script>
-import { getNewsInfo, removeNewsInfo } from '@/utils/preview'
+import { getNewsInfo } from '@/utils/preview'
 import { selectDraft } from '@/api/news/inputter'
+import { selectTransitNews } from '@/api/news/editor'
 
 const apiMap = {
     draft: selectDraft,//草稿对应的api是selectDraft
+    transit: selectTransitNews,//查询中转状态的新闻的api
 }
 
 function getDefaultNewsInfo(){
@@ -121,11 +123,13 @@ function getDefaultNewsInfo(){
                 let type = queryParam['type']
                 //有id、有type，就查询数据库
                 if(id && type) {
-                    if(type === 'draft') {
+                    //必须满足参数规范
+                    if(type === 'draft'|| type === 'transit') {
                         this.query.id = id
+                        //查询api
                         this.query.queryApi = apiMap[type]
                         return true
-                    }else {
+                    }else{
                         throw new Error("未知的type参数!")
                     }
                 }

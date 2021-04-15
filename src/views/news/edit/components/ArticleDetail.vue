@@ -19,6 +19,9 @@
 
       <div class="createPost-main-container">
         <el-row>
+
+          <SuggestionBox v-if="suggestionBoxTitle" :title="suggestionBoxTitle" :newsId="postForm.id"/>
+
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
               <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
@@ -59,14 +62,14 @@
 import Tinymce from '@/components/Tinymce'
 import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
-import Sticky from '@/components/Sticky' // 粘性header组件
-import { SourceUrlDropdown } from './Dropdown'
 import BtnGroupForInputter from './BtnGroupForInputter'
 import BtnGroupForEditor from './BtnGroupForEditor'
 import BtnGroupForReviewer from './BtnGroupForReviewer'
+import SuggestionBox from './SuggestionBox'
 import { saveNewsInfo, jumpToPreviewPage } from '@/utils/preview'
 import { createOrSaveNewsAsDraftOrCompleted } from '@/api/news/inputter'
 import { validURL } from '@/utils/validate'
+import { saveOrSaveAndSubmitReview } from '@/api/news/editor'
 
 function getDefaultForm(){
   return {
@@ -81,7 +84,7 @@ function getDefaultForm(){
 
 export default {
   name: 'ArticleDetail',
-  components: { Tinymce, MDinput, Upload, Sticky, SourceUrlDropdown, BtnGroupForInputter, BtnGroupForEditor, BtnGroupForReviewer },
+  components: { Tinymce, MDinput, Upload, SuggestionBox, BtnGroupForInputter, BtnGroupForEditor, BtnGroupForReviewer },
   props: {
     isEdit: {
       type: Boolean,
@@ -115,6 +118,19 @@ export default {
       rules: {
         title: [{ validator: validateTitle }],
       },
+      //需要显示意见栏（SuggestionBox组件）的新闻状态的列表
+      showSuggestionBoxNewsStatusList: {
+        //code: name
+        3: '审核失败',
+        10: '打回修改'
+      },
+      //新闻状态。如果是编辑文章，则用该字段保存新闻状态的code
+      newsStatus: undefined       
+    }
+  },
+  computed: {
+    suggestionBoxTitle(){
+      return this.showSuggestionBoxNewsStatusList[this.newsStatus]  
     }
   },
   created() {
@@ -140,9 +156,9 @@ export default {
             this.loadingForEdit = false
             return
         }
-        console.log('查询草稿成功')
+        console.log('查到了新闻成功')
         //查到了新闻
-        let { id, title, content, imgSource, articleSource, externalUrl } = resp
+        let { id, title, content, imgSource, articleSource, externalUrl, newsStatus } = resp
         //填充id，则保存就是更新操作
         this.postForm.id = id
         this.postForm.title = title
@@ -151,6 +167,7 @@ export default {
         this.postForm.articleSource = articleSource
         this.postForm.externalUrl = externalUrl
         this.loadingForEdit = false
+        this.newsStatus = newsStatus
       }).catch(error => {
         this.loadingForEdit = false
       })
@@ -160,17 +177,27 @@ export default {
       document.title = `${title} - ${this.postForm.id}`
     },
     validateForm(){
-      let success
+      let success = true
       this.$refs.postForm.validate(validateResult => {
-          success = validateResult
+          if(!validateResult) {
+            success = false
+          }
       })
+      //验证外链
+      let externalUrl = this.postForm.externalUrl
+      if(externalUrl && externalUrl.trim() !== '' && !validURL(externalUrl)) {
+        this.$message({
+          message: '请填写正确的外链',
+          type: 'error'
+        })        
+        success = false
+      }
       return success
     },
     //以下是按钮组的事件处理方法
     handleSaveByInputter(){
       // console.log('监听到子组件的save-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
-        console.log(this.postForm)
         createOrSaveNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
           if(resp) {
             //如果是创建草稿，就会返回新创建的新闻的id
@@ -184,7 +211,6 @@ export default {
     handleSubmitByInputter(){
       // console.log('监听到子组件的submit-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
-        console.log(this.postForm)
         createOrSaveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
             //上传成功后，就向父组件发射创建新闻的事件
             this.$emit('create-new-news')
@@ -193,24 +219,18 @@ export default {
     },
     handlePreview(){
       console.log('监听到子组件的preview事件')
-      let externalUrl = this.postForm.externalUrl
-      if(externalUrl) {
-          //如果设置了外链，就跳转到外网
-          //先校验外链
-          if(!validURL(externalUrl)) {
-            this.$message({
-              message: '请填写正确的外链',
-              type: 'error'
-            })
-          }else {
+      if(this.validateForm()) {
+        //验证通过了才能预览
+        if(this.postForm.externalUrl) {
+            //如果设置了外链，就跳转到外网
             //是外链，才跳转
-            window.open(externalUrl, '_blank'); 
-          }
-      }else {
-        //先将新闻信息存储到localStorage中，全局共享，以便预览新闻组件可以获得新闻信息进行显示
-        saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
-        //跳转到预览新闻页面
-        jumpToPreviewPage(this.$router, {})
+            window.open(this.postForm.externalUrl, '_blank'); 
+        }else {
+          //先将新闻信息存储到localStorage中，全局共享，以便预览新闻组件可以获得新闻信息进行显示
+          saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
+          //跳转到预览新闻页面
+          jumpToPreviewPage(this.$router, {})
+        }
       }
     },
     handleCreateNewNews(){
@@ -219,9 +239,18 @@ export default {
     },
     handleSaveByEditor(){
       // console.log('监听到子组件的save-by-editor事件 外链='+this.postForm.externalUrl)
+      if(this.validateForm()){
+        saveOrSaveAndSubmitReview(1, this.postForm)
+      }
     },
     handleSubmitByEditor(){
       // console.log('监听到子组件的submit-by-editor事件')
+      if(this.validateForm()){
+        saveOrSaveAndSubmitReview(2, this.postForm).then(resp => {
+          //送审之后，回到新闻中转站
+          this.$router.replace({name: '新闻中转站'})
+        })
+      }
     },
     handleSaveByReviewer(){
       // console.log('监听到子组件的save-by-reviewer事件 外链='+this.postForm.externalUrl)
