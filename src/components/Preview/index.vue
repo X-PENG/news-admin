@@ -40,13 +40,18 @@
 </template>
 
 <script>
+import { isNumber } from '@/utils/validate'
 import { getNewsInfo } from '@/utils/preview'
 import { selectDraft } from '@/api/news/inputter'
 import { selectTransitNews } from '@/api/news/editor'
+import { reviewLevelMapApiPathPrefix } from '@/views/news/review/index'
+import { selectUnderReviewNews } from '@/api/news/reviewer'
+
 
 const apiMap = {
     draft: selectDraft,//草稿对应的api是selectDraft
     transit: selectTransitNews,//查询中转状态的新闻的api
+    review: selectUnderReviewNews,//查询审核中的新闻
 }
 
 function getDefaultNewsInfo(){
@@ -67,7 +72,9 @@ function getDefaultNewsInfo(){
                 //如果是查询新闻进行显示，就封装新闻id和对应的api函数
                 query: {
                     id: null,
-                    queryApi: null
+                    queryApi: null,
+                    //调用api的额外参数
+                    apiExtraParam: null
                 }
             }
         },
@@ -121,6 +128,7 @@ function getDefaultNewsInfo(){
                 let queryParam = this.$route.query
                 let id = queryParam['id']
                 let type = queryParam['type']
+                let reviewLevel = queryParam['reviewLevel']
                 //有id、有type，就查询数据库
                 if(id && type) {
                     //必须满足参数规范
@@ -129,6 +137,12 @@ function getDefaultNewsInfo(){
                         //查询api
                         this.query.queryApi = apiMap[type]
                         return true
+                    }else if(type === 'review' && isNumber(reviewLevel)){
+                        this.query.id = id
+                        //查询api
+                        this.query.queryApi = apiMap[type]
+                        this.query.apiExtraParam = reviewLevelMapApiPathPrefix[reviewLevel]
+                        return true                        
                     }else{
                         throw new Error("未知的type参数!")
                     }
@@ -154,7 +168,7 @@ function getDefaultNewsInfo(){
                     this.loading = false
                 }else {
                     console.log('查询数据库进行初始化')
-                    this.query.queryApi(this.query.id).then(resp => {
+                    this.query.queryApi(this.query.id, this.query.apiExtraParam).then(resp => {
                         if(!resp) {
                             this.$message({
                                 message: '加载失败！可能原因：新闻不存在或没有查询权限。',

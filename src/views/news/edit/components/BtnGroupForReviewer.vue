@@ -4,11 +4,8 @@
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="save">
             保存
         </el-button>
-        <el-button v-loading="loading" type="primary" @click="reviewSuccess">
-            审核通过
-        </el-button>
-        <el-button v-loading="loading" type="danger" @click="reviewFail">
-            审核失败
+        <el-button v-loading="loading" type="primary" @click="saveAndreviewSuccess">
+            保存并通过审核
         </el-button>
         <el-button v-loading="loading" type="warning" @click="preview">
             预览
@@ -52,19 +49,13 @@ import { SourceUrlDropdown } from './Dropdown'
         },
         methods: {
             save(){
-                console.log('保存')
                 this.$emit('save-by-reviewer')
             },
-            reviewSuccess(){
-                console.log('审核通过')
-                this.$emit('review-success')
-            },
-            reviewFail(){
-                console.log('审核失败')
-                this.$emit('review-fail')
+            saveAndreviewSuccess(){
+                //向父组件发射事件
+                this.$emit('save-and-review-success')
             },
             preview(){
-                console.log('预览')
                 this.$emit('preview')
             }
         }

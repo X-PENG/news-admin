@@ -12,8 +12,7 @@
         @save-by-editor="handleSaveByEditor"
         @submit-by-editor="handleSubmitByEditor"
         @save-by-reviewer="handleSaveByReviewer"
-        @review-success="handleReviewSuccess"
-        @review-fail="handleReviewFail"
+        @save-and-review-success="handleSaveAndReviewSuccess"
       >
       </component>
 
@@ -70,6 +69,8 @@ import { saveNewsInfo, jumpToPreviewPage } from '@/utils/preview'
 import { createOrSaveNewsAsDraftOrCompleted } from '@/api/news/inputter'
 import { validURL } from '@/utils/validate'
 import { saveOrSaveAndSubmitReview } from '@/api/news/editor'
+import { saveOrSaveAndReviewSuccess } from '@/api/news/reviewer'
+import { reviewLevelMapApiPathPrefix } from '@/views/news/review/index'
 
 function getDefaultForm(){
   return {
@@ -97,6 +98,11 @@ export default {
     fetchDataAPI: {
       type: Function,
       default: null
+    },
+    //当前正在编辑的新闻的审核等级
+    curEditingNewsReviewLevel: {
+      type: String,
+      default: undefined
     }
   },
   data() {
@@ -140,14 +146,20 @@ export default {
       console.log('fetchDataAPI')
       console.log(this.fetchDataAPI)
       const id = this.$route.query && this.$route.query.id
+      const apiExtraParam = reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel]
+      console.log("api额外参数" + apiExtraParam)
       //如果是编辑新闻，那就先查询新闻
-      this.fetchData(id)
+      this.fetchData(id, apiExtraParam)
     }
   },
   methods: {
-    fetchData(id) {
+    /**
+     * @param id 新闻id
+     * @param apiExtraParam 调用api的额外参数
+     */
+    fetchData(id, apiExtraParam) {
       this.loadingForEdit = true
-      this.fetchDataAPI(id).then(resp => {
+      this.fetchDataAPI(id, apiExtraParam).then(resp => {
         if(!resp) {
             this.$message({
                 message: '加载失败！可能原因：新闻不存在或没有查询权限。',
@@ -218,7 +230,6 @@ export default {
       }      
     },
     handlePreview(){
-      console.log('监听到子组件的preview事件')
       if(this.validateForm()) {
         //验证通过了才能预览
         if(this.postForm.externalUrl) {
@@ -254,12 +265,18 @@ export default {
     },
     handleSaveByReviewer(){
       // console.log('监听到子组件的save-by-reviewer事件 外链='+this.postForm.externalUrl)
+      if(this.validateForm()) {
+        saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 1, this.postForm)
+      }
     },
-    handleReviewSuccess(){
+    handleSaveAndReviewSuccess(){
       // console.log('监听到子组件的review-success事件')
-    },
-    handleReviewFail(){
-      // console.log('监听到子组件的review-fail事件')
+      if(this.validateForm()) {
+        saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 2, this.postForm).then(resp => {
+          //审核通过后，回到自己的审核站
+          this.$router.replace(`/news/review/${this.curEditingNewsReviewLevel}`)
+        })
+      }
     }
   }
 }

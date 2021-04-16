@@ -1,5 +1,12 @@
 <template>
-  <article-detail :is-edit="isEdit" :current-btn-group="currentBtnGroup" :fetchDataAPI="fetchAPIMap[currentBtnGroup]" :key="componentKey" @create-new-news="handleCreateNewNews"/>
+  <article-detail 
+  :is-edit="isEdit" 
+  :current-btn-group="currentBtnGroup" 
+  :fetchDataAPI="fetchAPIMap[currentBtnGroup]" 
+  :curEditingNewsReviewLevel="curEditingNewsReviewLevel"
+  :key="componentKey" 
+  @create-new-news="handleCreateNewNews"
+  />
 </template>
 
 <script>
@@ -7,6 +14,7 @@ import ArticleDetail from './components/ArticleDetail'
 import { isNumber } from '@/utils/validate'
 import { selectDraft } from '@/api/news/inputter'
 import { selectTransitNews } from '@/api/news/editor'
+import { selectUnderReviewNews } from '@/api/news/reviewer'
 
 /**
  * type和按钮组的映射
@@ -28,8 +36,11 @@ export default {
       //按钮组和fetchDataAPI的映射
       fetchAPIMap: {
         'btn-group-for-inputter': selectDraft,//传稿人编辑草稿时的查询api
-        'btn-group-for-editor': selectTransitNews//中转新闻查询api 
-      }
+        'btn-group-for-editor': selectTransitNews,//中转新闻查询api 
+        'btn-group-for-reviewer': selectUnderReviewNews//查询审核中的新闻的api
+      },
+      //该属性用来保存 当前正在编辑的新闻的审核等级
+      curEditingNewsReviewLevel: undefined
     };
   },
   computed: {
@@ -54,13 +65,15 @@ export default {
       //传了id参数，则可能是要编辑新闻
       if(isNumber(id)){
         if(type === 'draft'){
-          //要编辑草稿
+          //表示要编辑草稿
           return btnGroupMap['inputter']
         }else if(type === 'transit'){
-          //要编辑中转的新闻
+          //表示要编辑中转的新闻
           return btnGroupMap['editor']
         }else if(type === 'review' && isNumber(reviewLevel)){
-          //要编辑正在审核的新闻
+          //表示要编辑正在审核的新闻
+          //保存当前正在编辑的新闻的审核等级
+          this.curEditingNewsReviewLevel = reviewLevel
           return btnGroupMap['reviewer']
         }
       }
