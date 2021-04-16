@@ -71,7 +71,8 @@ export default {
     },
     async logout() {
       await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      let targetRouteQueryStr =  JSON.stringify(this.$route.query)
+      this.$router.push(`/login?redirect=${this.$route.fullPath}&targetRouteQueryStr=${targetRouteQueryStr}`)
     }
   }
 }

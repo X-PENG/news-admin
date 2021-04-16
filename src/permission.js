@@ -57,7 +57,9 @@ router.beforeEach(async(to, from, next) => {
     if (whiteList.indexOf(to.path) !== -1) {
       next()
     } else {
-      next(`/login?redirect=${to.path}`)
+      //目标路由的查询字符串
+      let targetRouteQueryStr = JSON.stringify(to.query)
+      next(`/login?redirect=${to.path}&targetRouteQueryStr=${targetRouteQueryStr}`)
       NProgress.done()
     }
   }

@@ -97,12 +97,15 @@ export default {
       loading: false,
       passwordType: "password",
       redirect: undefined,
+      //重定向目标路由的查询字符串
+      targetRouteQueryStr: undefined
     };
   },
   watch: {
     $route: {
       handler: function (route) {
         this.redirect = route.query && route.query.redirect;
+        this.targetRouteQueryStr = route.query && route.query.targetRouteQueryStr
       },
       immediate: true,
     },
@@ -126,7 +129,7 @@ export default {
           this.$store
             .dispatch("user/login", this.loginForm)
             .then(() => {
-              this.$router.push({ path: this.redirect || "/" });
+              this.$router.push({ path: this.redirect || "/", query: (!!this.targetRouteQueryStr ? JSON.parse(this.targetRouteQueryStr) : {} )});
               this.loading = false;
             })
             .catch(() => {
