@@ -197,12 +197,14 @@ export default {
       })
       //验证外链
       let externalUrl = this.postForm.externalUrl
-      if(externalUrl && externalUrl.trim() !== '' && !validURL(externalUrl)) {
-        this.$message({
-          message: '请填写正确的外链',
-          type: 'error'
-        })        
-        success = false
+      if(externalUrl && externalUrl.trim() !== '') {
+        if(!validURL(externalUrl)){
+          this.$message({
+            message: '请填写正确的外链',
+            type: 'error'
+          })        
+          success = false
+        }
       }
       return success
     },
@@ -210,22 +212,36 @@ export default {
     handleSaveByInputter(){
       // console.log('监听到子组件的save-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
-        createOrSaveNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
-          if(resp) {
-            //如果是创建草稿，就会返回新创建的新闻的id
-            console.log('新的新闻的id = ' + resp)
-            //将新草稿的id赋给到this.postForm中，表示接下来的保存/上传操作将携带id，是更新操作
-            this.postForm.id = resp
-          }
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          createOrSaveNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
+            if(resp) {
+              //如果是创建草稿，就会返回新创建的新闻的id
+              console.log('新的新闻的id = ' + resp)
+              //将新草稿的id赋给到this.postForm中，表示接下来的保存/上传操作将携带id，是更新操作
+              this.postForm.id = resp
+            }
+          })
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
         })
       }
     },
     handleSubmitByInputter(){
       // console.log('监听到子组件的submit-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
-        createOrSaveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
-            //上传成功后，就向父组件发射创建新闻的事件
-            this.$emit('create-new-news')
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          createOrSaveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
+              //上传成功后，就向父组件发射创建新闻的事件
+              this.$emit('create-new-news')
+          })
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
         })
       }      
     },
@@ -251,32 +267,80 @@ export default {
     handleSaveByEditor(){
       // console.log('监听到子组件的save-by-editor事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
-        saveOrSaveAndSubmitReview(1, this.postForm)
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          saveOrSaveAndSubmitReview(1, this.postForm)
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
+        })
       }
     },
     handleSubmitByEditor(){
       // console.log('监听到子组件的submit-by-editor事件')
       if(this.validateForm()){
-        saveOrSaveAndSubmitReview(2, this.postForm).then(resp => {
-          //送审之后，回到新闻中转站
-          this.$router.replace({name: '新闻中转站'})
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          saveOrSaveAndSubmitReview(2, this.postForm).then(resp => {
+            //送审之后，回到新闻中转站
+            this.$router.replace({name: '新闻中转站'})
+          })
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
         })
       }
     },
     handleSaveByReviewer(){
       // console.log('监听到子组件的save-by-reviewer事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()) {
-        saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 1, this.postForm)
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 1, this.postForm)
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
+        })
       }
     },
     handleSaveAndReviewSuccess(){
       // console.log('监听到子组件的review-success事件')
       if(this.validateForm()) {
-        saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 2, this.postForm).then(resp => {
-          //审核通过后，回到自己的审核站
-          this.$router.replace(`/news/review/${this.curEditingNewsReviewLevel}`)
+        this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
+          saveOrSaveAndReviewSuccess(reviewLevelMapApiPathPrefix[this.curEditingNewsReviewLevel], 2, this.postForm).then(resp => {
+            //审核通过后，回到自己的审核站
+            this.$router.replace(`/news/review/${this.curEditingNewsReviewLevel}`)
+          })
+        }).catch(error => {
+            this.$message({
+              message: '取消',
+              type: 'info'
+            })          
         })
       }
+    },
+    //验证外链，如果设置了外链就提示
+    validateExternalUrlAndPrompt(url) {
+      return new Promise((resolve, reject) => {
+          //如果设置了外链，就提示
+          if(url && url.trim() !== '') {
+                this.$confirm("检测到新闻设置了外链，除了标题之外的其他信息将都不会保存，你确定吗？", "温馨提示", {
+                    confirmButtonText: "确定",
+                    cancelButtonText: "取消",
+                    type: "warning",
+                }).then(() => {
+                  resolve()
+                }).catch(() => {
+                  reject()
+                })               
+          }else {
+              // console.log('没有设置外链，直接resolve')
+              resolve()
+          }
+      })
     }
   }
 }
