@@ -21,14 +21,14 @@
                 </el-col>
                 <el-col :span="24" class="articleAuthor">
 						<p>
-                            <span> 2021/03/23</span>
-						    <span> 阅读：6796次</span>
-						    <span>信息来源： 融媒体中心 </span>						
+                            <span> {{ authorInfo.time }}</span>
+						    <span> 阅读：{{ authorInfo.count }}次</span>
+						    <!-- <span>信息来源： 融媒体中心 </span>						 -->
                         </p>
-						<span>文字：韩芳</span><i>|</i>    
-						<span>摄影：王天天、李香花、刘月玲、夏子然</span><i>|</i>    						  
-						<span>编辑：悠然</span><i>|</i>    						
-                        <span>责编：山石</span>    						
+						<span>文字：{{ authorInfo.articleSource }}</span><i>|</i>    
+						<span>图片：{{ authorInfo.imgSource }}</span><i>|</i>    						  
+						<span>编辑：{{ authorInfo.editors }}</span><i>|</i>    						
+                        <span>审核：{{ authorInfo.reviewers }}</span>    						
                 </el-col>
             </el-row> 
 
@@ -43,15 +43,16 @@
 import { isNumber } from '@/utils/validate'
 import { getNewsInfo } from '@/utils/preview'
 import { selectDraft } from '@/api/news/inputter'
-import { selectTransitNews } from '@/api/news/editor'
-import { reviewLevelMapApiPathPrefix } from '@/views/news/review/index'
-import { selectUnderReviewNews } from '@/api/news/reviewer'
+import { selectNotDraftNews } from '@/api/news/publicService'
 
-
+/**
+ * 预览新闻，需要查询新闻进行显示，
+ * 规定：除了草稿要使用独立api查询，其他状态的新闻都使用公共的查询非草稿的api。
+ * 因为，草稿是传稿人私有的，所以需要独立的查询草稿的api。
+ */
 const apiMap = {
     draft: selectDraft,//草稿对应的api是selectDraft
-    transit: selectTransitNews,//查询中转状态的新闻的api
-    review: selectUnderReviewNews,//查询审核中的新闻
+    notDraft: selectNotDraftNews//查询不是草稿的新闻的api
 }
 
 function getDefaultNewsInfo(){
@@ -73,8 +74,14 @@ function getDefaultNewsInfo(){
                 query: {
                     id: null,
                     queryApi: null,
-                    //调用api的额外参数
-                    apiExtraParam: null
+                },
+                authorInfo: {
+                    time: '0000-00-00',
+                    count: 0,
+                    articleSource: '',
+                    imgSource: '',
+                    editors: '',
+                    reviewers: ''
                 }
             }
         },
@@ -121,30 +128,33 @@ function getDefaultNewsInfo(){
         methods: {
             /**
              * 判断是从后台查询新闻进行初始化，还是从localStorage中查询新闻进行初始化。
-             * id参数，表示从后台查询哪个新闻；
-             * type参数，表示是查询草稿、中转还是审核状态的新闻
+             * 路由参数的含义：
+             *      id参数，表示从后台查询哪个新闻；
+             *      type参数，表示是查询草稿；不传type参数，表示查询非草稿新闻
+             * @returns true：则从后台查询；false：则从LocalStorage中查询新闻。
              */
             judgeIsInitByQuertNews(){
                 let queryParam = this.$route.query
                 let id = queryParam['id']
                 let type = queryParam['type']
-                let reviewLevel = queryParam['reviewLevel']
-                //有id、有type，就查询数据库
-                if(id && type) {
-                    //必须满足参数规范
-                    if(type === 'draft'|| type === 'transit') {
+                //有id，则可能要从后台查询新闻
+                if(isNumber(id)) {
+                    if(type) {
+                        if(type === 'draft') {
+                            //type为draft，表示要查询草稿
+                            this.query.id = id
+                            //查询api
+                            this.query.queryApi = apiMap['draft']                            
+                            return true
+                        }else {
+                            throw new Error("未知的type参数!")
+                        }
+                    }else {
+                        //没有传递type，则需要查询不是草稿的新闻
                         this.query.id = id
                         //查询api
-                        this.query.queryApi = apiMap[type]
+                        this.query.queryApi = apiMap['notDraft']                           
                         return true
-                    }else if(type === 'review' && isNumber(reviewLevel)){
-                        this.query.id = id
-                        //查询api
-                        this.query.queryApi = apiMap[type]
-                        this.query.apiExtraParam = reviewLevelMapApiPathPrefix[reviewLevel]
-                        return true                        
-                    }else{
-                        throw new Error("未知的type参数!")
                     }
                 }
                 //没有任何参数，就查询localStorage
@@ -154,7 +164,7 @@ function getDefaultNewsInfo(){
 
                 throw new Error("路由参数异常!")
             },
-            initNews(){
+            async initNews(){
                 if(this.isInitByQueryNews === undefined) {
                     console.log('未知的初始化方式！')
                     return
@@ -163,31 +173,65 @@ function getDefaultNewsInfo(){
                 //开始初始化
                 this.loading = true
                 if(!this.isInitByQueryNews){
-                    console.log('查询localStorage进行初始化')
-                    this.newsInfo = getNewsInfo()
-                    this.loading = false
+                    //await等待查询完毕
+                    this.newsInfo = await this.queryFromLocalStorage()
                 }else {
+                    //await等待查询完毕
+                    this.newsInfo = await this.queryFromServer()
+                }
+
+                //填充作者信息
+                this.authorInfo.time = this.newsInfo.showPubTime || this.authorInfo.time
+                //阅读量 = 初始设置的阅读量 + 实际阅读量
+                this.authorInfo.count = (this.newsInfo.initReadingCount || 0) + (this.newsInfo.realReadingCount || 0) 
+                this.authorInfo.articleSource = this.newsInfo.articleSource || this.authorInfo.articleSource
+                this.authorInfo.imgSource = this.newsInfo.imgSource || this.authorInfo.imgSource
+                this.authorInfo.editors = this.format(this.newsInfo.editors || this.authorInfo.editors)
+                this.authorInfo.reviewers = this.format(this.newsInfo.reviewers || this.authorInfo.reviewers)
+
+                this.loading = false
+            },
+            //从localStorage中查询新闻
+            queryFromLocalStorage() {
+                return new Promise((resolve, reject) => {
+                    console.log('查询localStorage进行初始化')
+                    let news = getNewsInfo()
+                    resolve(news)
+                })
+            },
+            //从服务器获取新闻
+            queryFromServer() {
+                return new Promise((resolve, reject) => {
                     console.log('查询数据库进行初始化')
-                    this.query.queryApi(this.query.id, this.query.apiExtraParam).then(resp => {
+                    this.query.queryApi(this.query.id).then(resp => {
                         if(!resp) {
                             this.$message({
                                 message: '加载失败！可能原因：新闻不存在或没有查询权限。',
                                 type: 'error'
                             })
-                            this.loading = false
-                            return
+                            resolve({})//返回空对象
+                        }else{
+                            resolve(resp)
                         }
-                        this.newsInfo = resp
-                        this.loading = false
                     }).catch(errpr => {
                         this.$message({
                             message: '加载失败！',
                             type: 'error'
                         })
-                        this.loading = false
-                    })
+                        resolve({})//返回空对象
+                    })                    
+                })
+            },
+            //去掉字符串末尾的分隔符，比如：顿号
+            format(str) {
+                if(str) {
+                    let c = str[str.length - 1]
+                    if(c === '、') {
+                        return str.substring(0, str.length - 1)
+                    }
                 }
-            }
+                return str
+            }            
         },
     }
 </script>
