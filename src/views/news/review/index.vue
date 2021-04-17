@@ -396,7 +396,7 @@ function getDefaultQueryParam() {
                         window.open(externalUrl, '_blank'); 
                     }else {
                         //预览id为selectedNewId的新闻
-                        jumpToPreviewPage(this.$router, {id: selectedNewId, type: 'review', reviewLevel: this.curReviewLevel})
+                        jumpToPreviewPage(this.$router, {id: selectedNewId})
                     }
                 }
             }

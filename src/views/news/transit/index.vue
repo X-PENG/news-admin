@@ -414,7 +414,7 @@ const editors_seperator = "、";
                         window.open(externalUrl, '_blank'); 
                     }else {
                         //预览id为selectedNewId的草稿
-                        jumpToPreviewPage(this.$router, {id: selectedNewId, type: 'transit'})
+                        jumpToPreviewPage(this.$router, {id: selectedNewId})
                     }
                 }
             },
