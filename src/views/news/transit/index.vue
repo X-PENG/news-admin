@@ -325,7 +325,10 @@ const editors_seperator = "、";
                 this.queryData();
             },
             resetFilter(){
+                let order = this.queryParam.orderByLatestEditTime
                 this.queryParam = getDefaultQueryParam();
+                //不能重置排序，要设回来
+                this.orderByLatestEditTime = order
             }, 
             /**
              * order有三个值：ascending、descending和null

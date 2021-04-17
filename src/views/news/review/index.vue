@@ -276,7 +276,14 @@ function getDefaultQueryParam() {
                 this.queryData();
             },
             resetFilter(){
+                let order1 = this.queryParam.orderByLatestEditTime
+                let order2 = this.queryParam.orderByPreviousEpochReviewPassTime
+                let order3 = this.queryParam.orderBySubmitTime
                 this.queryParam = getDefaultQueryParam();
+                //不能重置排序，要设回来
+                this.queryParam.orderByLatestEditTime = order1
+                this.queryParam.orderByPreviousEpochReviewPassTime = order2
+                this.queryParam.orderBySubmitTime = order3                
             },
             /**
              * order有三个值：ascending、descending和null

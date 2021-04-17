@@ -201,7 +201,10 @@ function getDefaultQueryParam() {
                 this.queryData();
             },
             resetFilter(){
+                let order = this.queryParam.orderByCreateTime
                 this.queryParam = getDefaultQueryParam();
+                //不能重置排序，要设回来
+                this.queryParam.orderByCreateTime = order
             },
             /**
              * order有三个值：ascending、descending和null
