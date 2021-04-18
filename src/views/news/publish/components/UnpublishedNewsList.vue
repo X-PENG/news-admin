@@ -493,6 +493,7 @@ function getDefaultPubSettingInfo() {
                 this.pubNewsDialogObj.pubSettingInfo.imgSource = row.imgSource
                 this.pubNewsDialogObj.pubSettingInfo.editors = row.editors
                 this.pubNewsDialogObj.pubSettingInfo.reviewers = row.reviewers
+                this.pubNewsDialogObj.pubSettingInfo.showPubTime = row.showPubTime
                 //显示对话框
                 this.pubNewsDialogObj.visible = true
             },
