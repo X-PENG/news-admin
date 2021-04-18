@@ -19,7 +19,7 @@
       <div class="createPost-main-container">
         <el-row>
 
-          <SuggestionBox v-if="suggestionBoxTitle" :title="suggestionBoxTitle" :newsId="postForm.id"/>
+          <SuggestionBox v-if="showSuggestionBoxNewsStatusList[suggestionBoxTitle]" :title="suggestionBoxTitle" :newsId="postForm.id"/>
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
@@ -71,6 +71,7 @@ import { validURL } from '@/utils/validate'
 import { saveOrSaveAndSubmitReview } from '@/api/news/editor'
 import { saveOrSaveAndReviewSuccess } from '@/api/news/reviewer'
 import { reviewLevelMapApiPathPrefix } from '@/views/news/review/index'
+import newsStatusMap from '@/utils/newsStatusMap'
 
 function getDefaultForm(){
   return {
@@ -126,9 +127,8 @@ export default {
       },
       //需要显示意见栏（SuggestionBox组件）的新闻状态的列表
       showSuggestionBoxNewsStatusList: {
-        //code: name
-        3: '审核失败',
-        10: '打回修改'
+        '审核失败': true,
+        '打回修改': true
       },
       //新闻状态。如果是编辑文章，则用该字段保存新闻状态的code
       newsStatus: undefined       
@@ -136,7 +136,7 @@ export default {
   },
   computed: {
     suggestionBoxTitle(){
-      return this.showSuggestionBoxNewsStatusList[this.newsStatus]  
+      return newsStatusMap[this.newsStatus]
     }
   },
   created() {
