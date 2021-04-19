@@ -294,7 +294,6 @@
             </el-form>     
             <div slot="footer" class="dialog-footer">
                 <el-button
-                type="primary"
                 @click="pubNewsDialogObj.visible = false"
                 >取消</el-button
                 >
