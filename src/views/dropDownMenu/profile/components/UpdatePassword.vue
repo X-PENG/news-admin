@@ -1,5 +1,5 @@
 <template>
-  <el-form :model="form" :rules="rules" ref="form">
+  <el-form :model="form" :rules="rules" ref="form" :key="formKey">
     <el-form-item label="新密码" prop="newPassword">
       <el-input ref='newPassInput' type="password" v-model="form.newPassword" placeholder="请输入新密码" />
     </el-form-item>
@@ -32,6 +32,8 @@ export default {
       }
     };
     return {
+      formKey: 'formKey',
+      formKey_prefix: 'formKey',
       form: {
         newPassword: "",
         confirmPassword: "",
@@ -55,6 +57,7 @@ export default {
     resetForm(){
       this.form.newPassword=''
       this.form.confirmPassword=''
+      this.formKey = this.formKey_prefix + new Date().getTime()
     }
   },
 };

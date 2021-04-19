@@ -108,6 +108,15 @@ export default {
       this.editStatus = false;
     },
     async submitEdit(){
+      //校验表单内容
+      let newPhone = this.newUserInfo.phone
+      if(!newPhone || newPhone.trim() === '') {
+        this.$message({
+          message: '手机号码不能为空！',
+          type: 'error'
+        })
+        return
+      }
       //请求修改用户信息
       await this.$store.dispatch('user/updateInfo', this.newUserInfo)
       //再请求最新的用户信息
