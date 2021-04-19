@@ -72,7 +72,7 @@
                 {{ scope.row.externalUrl }}
                 </template>
             </el-table-column> 
-            <el-table-column align="center" label="新闻状态" width="140">
+            <el-table-column align="center" label="新闻状态">
                 <template slot-scope="scope">
                     <el-tag :type="eTagTypeMap[scope.row.newsStatus.name]" style="font-size: 1em">
                         {{ scope.row.newsStatus.name }}
