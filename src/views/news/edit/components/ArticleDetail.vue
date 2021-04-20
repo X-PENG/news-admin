@@ -41,6 +41,21 @@
                   </el-form-item>
                 </el-col>                
               </el-row>
+              <el-row>
+                <el-col :span="24">
+                  <el-form-item label-width="80px" label="导读片段:">
+                        <el-input
+                        type="textarea"
+                        placeholder="请输入导读片段"
+                        v-model="postForm.articleFragmentForShow"
+                        :autosize="{ minRows: 3}"
+                        maxlength="200"
+                        show-word-limit
+                        >
+                        </el-input>                       
+                  </el-form-item>
+                </el-col>   
+              </el-row>
             </div>
           </el-col>
         </el-row>
@@ -76,8 +91,9 @@ import newsStatusMap from '@/utils/newsStatusMap'
 function getDefaultForm(){
   return {
     id: null,
-    title: null, // 文章题目
-    content: null, // 文章内容
+    title: null, // 新闻标题
+    articleFragmentForShow: null,//新闻部分片段，用于门户网站的新闻列表进行显示
+    content: null, // 新闻内容
     imgSource: null,
     articleSource: null,
     externalUrl: null
@@ -170,10 +186,11 @@ export default {
         }
         console.log('查到了新闻成功')
         //查到了新闻
-        let { id, title, content, imgSource, articleSource, externalUrl, newsStatus } = resp
+        let { id, title, articleFragmentForShow, content, imgSource, articleSource, externalUrl, newsStatus } = resp
         //填充id，则保存就是更新操作
         this.postForm.id = id
         this.postForm.title = title
+        this.postForm.articleFragmentForShow = articleFragmentForShow
         this.postForm.content = content
         this.postForm.imgSource = imgSource
         this.postForm.articleSource = articleSource
