@@ -271,7 +271,7 @@ export default {
             window.open(this.postForm.externalUrl, '_blank'); 
         }else {
           //先将新闻信息存储到localStorage中，全局共享，以便预览新闻组件可以获得新闻信息进行显示
-          saveNewsInfo({title: this.postForm.title, content: this.postForm.content})
+          saveNewsInfo({title: this.postForm.title, articleFragmentForShow: this.postForm.articleFragmentForShow, content: this.postForm.content})
           //跳转到预览新闻页面
           jumpToPreviewPage(this.$router, {})
         }

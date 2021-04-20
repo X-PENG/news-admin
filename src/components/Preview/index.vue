@@ -33,7 +33,12 @@
             </el-row> 
 
             <div class="peng-news-show-content" v-html="newsInfo.content">
-            </div>			
+            </div>
+
+            <div class="articel-fragment-container">
+                <el-divider>导读片段</el-divider>	
+                <ArticelFragment :content="newsInfo.articleFragmentForShow"/>              		
+            </div>
         </div> 
     </div>
 
@@ -44,6 +49,7 @@ import { isNumber } from '@/utils/validate'
 import { getNewsInfo } from '@/utils/preview'
 import { selectDraft } from '@/api/news/inputter'
 import { selectNotDraftNews } from '@/api/news/publicService'
+import ArticelFragment from './components/ArticelFragment'
 
 /**
  * 预览新闻，需要查询新闻进行显示，
@@ -58,12 +64,14 @@ const apiMap = {
 function getDefaultNewsInfo(){
     return {
         title: '',
+        articleFragmentForShow: '',
         content: ''
     }
 } 
 
     export default {
         name:'Preview',
+        components: { ArticelFragment },
         data() {
             return {
                 loading: false,
@@ -296,5 +304,22 @@ function getDefaultNewsInfo(){
     min-width: 70%;
     max-width: 70%;
     height: auto;
+}
+.peng-news-show-container .articel-fragment-container {
+    margin-top: 50px;
+}
+/* element-ui的分割线组件的css */
+.articel-fragment-container .el-divider {
+    background-color: #DCDFE6;
+    position: relative;
+    margin-bottom: 20px;
+}
+.articel-fragment-container .el-divider .el-divider__text {
+    position: absolute;
+    background-color: #FFF;
+    padding: 0 20px;
+    color: #303133;
+    font-weight: 500;
+    font-size: 0.9em;
 }
 </style>

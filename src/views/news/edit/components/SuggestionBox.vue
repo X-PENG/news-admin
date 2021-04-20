@@ -90,13 +90,14 @@ const titleMapApi = {
 
 <style lang="scss" scoped>
 
-/* 动画 */
-//  .suggestion-box-transition-leave-active {
-//     transition: opacity 0.5s
-// }
-//  .suggestion-box-transition-leave-to{
-//     opacity: 0
-// }
+/* 动画 未使用动画 */
+.suggestion-box-transition-leave-active {
+    transition: opacity 0.5s
+}
+.suggestion-box-transition-leave-to {
+    opacity: 0
+}
+
 .suggestion-header {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -109,7 +110,7 @@ const titleMapApi = {
     font-size: 1em;
     font-weight: bold;
 }
-aside {
+.peng-suggestion-box aside {
     background-color: #fdf6ec;
     color: #E6A23C;
     padding: 8px 24px;
