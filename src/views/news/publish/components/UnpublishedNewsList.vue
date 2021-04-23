@@ -243,7 +243,36 @@
                         tabindex="9"
                     />
                     </el-form-item>  
-                </el-col> 
+                </el-col>
+                <el-col :span="24">
+                    <el-form-item label="列表图片">
+                        <el-select
+                           style="width: 100%"
+                            v-model="pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList"
+                            @clear=" pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList=null "
+                            clearable
+                            filterable
+                            default-first-option
+                            allow-create
+                            placeholder="请选择或输入图片地址">
+                        </el-select>                                     
+                    </el-form-item>  
+                </el-col>     
+                <el-col :span="24" v-show="pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList" class="peng-img-container">
+                    <div class="flex-center">
+                        <el-image 
+                            v-if="pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList"
+                            :src="pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList"
+                            alt="图片加载失败"
+                        >
+                          <div slot="error" class="image-slot">
+                            <div class="error-div">
+                              <i class="el-icon-picture-outline"></i>
+                            </div>
+                          </div>                          
+                        </el-image>
+                    </div>                                     
+                </el-col>                              
                 <el-col :span="12">
                     <el-form-item label="是否头条">
                         <el-switch
@@ -343,7 +372,8 @@ function getDefaultPubSettingInfo() {
         initReadingCount: 0,//默认0,
         carousel: false,//默认false，不发布到轮播图上
         headlines: false,//默认false，不作为头条发布
-        imgUrlForCarousel: null
+        imgUrlForCarousel: null,
+        imgForShowOnNewsList: null
     }
 }
 
@@ -551,6 +581,15 @@ function getDefaultPubSettingInfo() {
                             type: 'error'
                         })
                     }
+                }else if(this.pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList){
+                    let imgForShowOnNewsList = this.pubNewsDialogObj.pubSettingInfo.imgForShowOnNewsList
+                    if(!validURL(imgForShowOnNewsList)){
+                        success = false
+                        this.$message({
+                            message: '图片地址不规范，请正确设置在新闻列表上显示的图片地址！',
+                            type: 'error'
+                        })
+                    }                    
                 }else if(!this.pubNewsDialogObj.pubSettingInfo.showPubTime) {
                         success = false
                         this.$message({
