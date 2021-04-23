@@ -49,3 +49,19 @@ export function enableOrDisableNewsCol(newsColId, status){
         }
     })
 }
+
+/**
+ * 改图片显示位置
+ * @param {*} newsColId 
+ * @param {*} status 
+ * @returns 
+ */
+export function changeNewsColShowImgStatus(newsColId, status){
+    return request({
+        url: `/management/column/showImgStatus/${newsColId}`,
+        method: 'put',
+        params:{
+            status
+        }
+    })
+}

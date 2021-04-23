@@ -47,19 +47,27 @@
       </el-table-column>
       <el-table-column align="center" label="菜单序号" width="80">
         <template slot-scope="scope">
-          {{ scope.row.menuOrder }}
+          {{ scope.row.settings.menuOrder }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="模块序号" width="80">
         <template slot-scope="scope">
-          {{ scope.row.moduleOrder }}
+          {{ scope.row.settings.moduleOrder }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="是否开启" width="100">
         <template slot-scope="scope">
           <el-switch
-            v-model="scope.row.enabled"
-            @change="changeStatus(scope.row)"
+            v-model="scope.row.settings.enabled"
+            @change="changeStatus($event, scope.row)"
+          ></el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="右侧显示图片" width="100">
+        <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.settings.showImgOnTheRight"
+            @change="changeShowImgStatus($event, scope.row)"
           ></el-switch>
         </template>
       </el-table-column>
@@ -121,18 +129,6 @@
           </el-select>
         </el-form-item>
       </el-col>
-      <el-col :span="12">
-        <el-form-item prop="menuOrder" label="菜单序号">
-          <el-tooltip class="item" effect="dark" content="默认为最大值127" placement="top-start">
-            <el-input
-              v-model="newsColInfoForAdd.menuOrder"
-              placeholder="菜单序号"
-              type="text"
-              tabindex="4"
-            />
-          </el-tooltip>
-        </el-form-item>
-      </el-col>      
       <el-col :span="24">
         <el-form-item prop="externalLink" label="外网链接">
           <el-input
@@ -196,7 +192,7 @@
       <el-col :span="12">
         <el-form-item prop="menuOrder" label="菜单序号">
           <el-input
-            v-model="newsColInfoForUpdate.menuOrder"
+            v-model="newsColInfoForUpdate.settings.menuOrder"
             placeholder="菜单序号"
             type="text"
             tabindex="3"
@@ -206,7 +202,7 @@
       <el-col :span="12">
         <el-form-item prop="moduleOrder" label="模块序号">
           <el-input
-            v-model="newsColInfoForUpdate.moduleOrder"
+            v-model="newsColInfoForUpdate.settings.moduleOrder"
             placeholder="模块序号"
             type="text"
             tabindex="4"
@@ -254,7 +250,7 @@
 </template>
 
 <script>
-import { newsColList, childNewsColList, addNewsCol, delNewsCol, updateNewsCol, enableOrDisableNewsCol } from '@/api/newsCol'
+import { newsColList, childNewsColList, addNewsCol, delNewsCol, updateNewsCol, enableOrDisableNewsCol, changeNewsColShowImgStatus } from '@/api/newsCol'
 import { isNumber } from '@/utils/validate'
 
 export default {
@@ -278,7 +274,6 @@ export default {
                 newsColInfoForAdd: {//添加的栏目信息
                     title: null,
                     description: null,
-                    menuOrder: 127,//默认最大值127
                     parentId: null,
                     externalLink: null
                 },
@@ -286,10 +281,12 @@ export default {
                     id: null,
                     title: null,
                     description: null,
-                    menuOrder: 127,//默认最大值127
-                    moduleOrder: null,
                     parentId: null,
-                    externalLink: null
+                    externalLink: null,
+                    settings: {
+                      menuOrder: 127,//默认最大值127
+                      moduleOrder: null
+                    }
                 },
             }
         },
@@ -333,7 +330,6 @@ export default {
               this.newsColInfoForAdd = {
                   title: null,
                   description: null,
-                  menuOrder: 127,//默认最大值127
                   parentId: null,
                   externalLink: null
               }               
@@ -353,16 +349,9 @@ export default {
             //对添加表单进行信息验证
             validateForAdd(){
               let title = this.newsColInfoForAdd.title
-              let menuOrder = this.newsColInfoForAdd.menuOrder
               let msg
               if(!title || title.trim() === ''){
                 msg = '名称不能为空或空格'
-              }else if(typeof(menuOrder) === 'string' && !menuOrder.trim()){
-                msg = '菜单序号不能为空'
-              }else if(!isNumber(menuOrder)){
-                msg = '菜单序号必须是数字'
-              }else if(menuOrder < 1 || menuOrder > 127){
-                msg = '菜单序号必须在1~127之间'
               }
               if(!!msg){
                 this.$message({
@@ -385,10 +374,10 @@ export default {
               this.newsColInfoForUpdate.id = this.curSelectedRow.id           
               this.newsColInfoForUpdate.title = this.curSelectedRow.title           
               this.newsColInfoForUpdate.description = this.curSelectedRow.description           
-              this.newsColInfoForUpdate.menuOrder = this.curSelectedRow.menuOrder           
-              this.newsColInfoForUpdate.moduleOrder = this.curSelectedRow.moduleOrder           
               this.newsColInfoForUpdate.parentId = this.curSelectedRow.parentId           
               this.newsColInfoForUpdate.externalLink = this.curSelectedRow.externalLink   
+              this.newsColInfoForUpdate.settings.menuOrder = this.curSelectedRow.settings.menuOrder           
+              this.newsColInfoForUpdate.settings.moduleOrder = this.curSelectedRow.settings.moduleOrder           
               this.editNewsColDialog.visible = true        
             },
             cancelUpdate(){
@@ -405,8 +394,8 @@ export default {
             //对编辑表单进行校验
             validateForUpdate(){
               let title = this.newsColInfoForUpdate.title
-              let menuOrder = this.newsColInfoForUpdate.menuOrder
-              let moduleOrder = this.newsColInfoForUpdate.moduleOrder
+              let menuOrder = this.newsColInfoForUpdate.settings.menuOrder
+              let moduleOrder = this.newsColInfoForUpdate.settings.moduleOrder
               let msg
               if(!title || title.trim() === ''){
                 msg = '名称不能为空或空格'
@@ -457,11 +446,41 @@ export default {
                 })
               })              
             },
-            changeStatus(row){
-              enableOrDisableNewsCol(row.id, row.enabled).catch(error => {
-                row.enabled = !row.enabled//还原
-              })
+            changeStatus($event, row){
+              let newStatus = $event
+              //先还原，请求成功了才改变
+              row.settings.enabled = !newStatus
+              let msgType = newStatus ? '开启' : '禁用'
+              this.$confirm(`你确定${msgType}【${row.title}】栏目吗？`, "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+              }).then(() => {
+                enableOrDisableNewsCol(row.id, newStatus).then(resp => {
+                    //请求成功才改变
+                    row.settings.enabled = newStatus
+                }).catch(error => {
+                  this.$message({
+                    message: '操作失败！',
+                    type: 'error'
+                  })
+                })
+              })      
             },
+            changeShowImgStatus($event, row) {
+              let newStatus = $event
+              //先还原，请求成功了才改变
+              row.settings.showImgOnTheRight = !newStatus
+              changeNewsColShowImgStatus(row.id, newStatus).then(resp => {
+                  //请求成功才改变
+                  row.settings.showImgOnTheRight = newStatus
+              }).catch(error => {
+                  this.$message({
+                    message: '操作失败！',
+                    type: 'error'
+                  })
+              })
+            }
         }
     }
 </script>
