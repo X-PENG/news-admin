@@ -39,7 +39,11 @@
                 <el-divider>导读片段</el-divider>	
                 <ArticelFragment :content="newsInfo.articleFragmentForShow"/>              		
             </div>
-        </div> 
+        </div>
+
+        <!-- 回到顶部组件 -->
+        <back-to-top :custom-style="myBackToTopStyle" :visibility-height="300" :back-position="0" transition-name="fade" />
+
     </div>
 
 </template>
@@ -50,6 +54,7 @@ import { getNewsInfo } from '@/utils/preview'
 import { selectDraft } from '@/api/news/inputter'
 import { selectNotDraftNews } from '@/api/news/publicService'
 import ArticelFragment from './components/ArticelFragment'
+import BackToTop from '@/components/BackToTop'
 
 /**
  * 预览新闻，需要查询新闻进行显示，
@@ -71,7 +76,7 @@ function getDefaultNewsInfo(){
 
     export default {
         name:'Preview',
-        components: { ArticelFragment },
+        components: { ArticelFragment, BackToTop },
         data() {
             return {
                 loading: false,
@@ -90,6 +95,16 @@ function getDefaultNewsInfo(){
                     imgSource: '',
                     editors: '',
                     reviewers: ''
+                },
+                // customizable button style, show/hide critical point, return position
+                myBackToTopStyle: {
+                    right: '50px',
+                    bottom: '50px',
+                    width: '40px',
+                    height: '40px',
+                    opacity: 0.8,
+                    'border-radius': '4px',
+                    'line-height': '45px', // 请保持与高度一致以垂直居中 Please keep consistent with height to center vertically
                 }
             }
         },
@@ -244,7 +259,23 @@ function getDefaultNewsInfo(){
     }
 </script>
 
-<style>
+<style lang="scss">
+.preview-container {
+    // 定义回到顶部的按钮的样式
+    .back-to-ceiling {
+        //在此处定义背景色，不要在内联样式style里面定义背景色，否则hover改变背景色会没用
+        background-color: #FFFFFF;
+        
+        .Icon {
+            //设置箭头图标的颜色
+            fill: #409eff;
+        }
+
+        &:hover {
+            background-color: #f2f6fc;
+        }
+    }    
+}
 .preview-container * {
     padding: 0;
     margin: 0;
