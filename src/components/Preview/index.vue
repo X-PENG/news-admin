@@ -253,7 +253,8 @@ function getDefaultNewsInfo(){
     display: flex;
     justify-content: center;  
     flex-wrap: wrap;
-    background: url(http://news.jxufe.edu.cn/statics/news/images/bg.gif) repeat-x #e4f1f9;
+    /* background: url(http://news.jxufe.edu.cn/statics/news/images/bg.gif) repeat-x #e4f1f9; */
+    background: url(~@/assets/bg.gif) repeat-x #e4f1f9;
     min-height: 100%;
 }
 .peng-news-show-container {
