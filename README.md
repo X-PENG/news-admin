@@ -4,7 +4,15 @@
 
 
 
-## 相关项目
+## 关联项目
+
+- [news-portal](https://github.com/X-PENG/news-portal)：门户网站。
+
+- [news](https://github.com/X-PENG/news)：后端项目。
+
+
+
+## 参考项目
 
 - [vue-admin-template](https://github.com/PanJiaChen/vue-admin-template)：本项目使用[vue-admin-template](https://github.com/PanJiaChen/vue-admin-template)项目作为**基础模板**进行**二次开发**的。
 - [vue-element-admin](https://github.com/PanJiaChen/vue-element-admin)：本项目参考了[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin)项目**集成一些组件**，比如：集成tinymec富文本编辑器。
