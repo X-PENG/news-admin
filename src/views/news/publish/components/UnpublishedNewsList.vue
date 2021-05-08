@@ -522,9 +522,32 @@ function getDefaultPubSettingInfo() {
                 this.pubNewsDialogObj.pubSettingInfo.imgSource = row.imgSource
                 this.pubNewsDialogObj.pubSettingInfo.editors = row.editors
                 this.pubNewsDialogObj.pubSettingInfo.reviewers = row.reviewers
-                this.pubNewsDialogObj.pubSettingInfo.showPubTime = row.showPubTime
+                if(row.showPubTime) {
+                    //如果之前设置了发布时间（比如，撤销发布的新闻），就默认设为之前设置的发布时间
+                    this.pubNewsDialogObj.pubSettingInfo.showPubTime = row.showPubTime
+                }else {
+                    //否则，默认设为当前时间
+                    this.pubNewsDialogObj.pubSettingInfo.showPubTime = this.getNowDateTimeStr()
+                }
                 //显示对话框
                 this.pubNewsDialogObj.visible = true
+            },
+            //得到当前日期时间字符串
+            getNowDateTimeStr(){
+                let now = new Date()
+                let year = now.getFullYear()
+                let month = now.getMonth() + 1
+                month = month < 10 ? ('0' + month) : month
+                let day = now.getDate()
+                day = day < 10 ? ('0' + day) : day
+                let hour = now.getHours()
+                hour = hour < 10 ? ('0' + hour) : hour
+                let minute = now.getMinutes()
+                minute = minute < 10 ? ('0' + minute) : minute
+                let second = now.getSeconds()
+                second = second < 10 ? ('0' + second) : second
+
+                return year + '-' + month + '-' + day + " " + hour + ':' + minute + ':' + second
             },
             handleRemodification(row) {
                 //设置当前行为正在操作的行
