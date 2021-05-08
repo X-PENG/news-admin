@@ -530,7 +530,7 @@ function getDefaultPubSettingInfo() {
                 //设置当前行为正在操作的行
                 this.curOperatedRow = row
                 //重置对话框状态
-                this.suggestionDialogObj = { visible: false, title: '审核失败', suggestion: '' }       
+                this.suggestionDialogObj = { visible: false, title: '打回修改', suggestion: '' }       
                 //然后，弹出意见填写对话框
                 this.suggestionDialogObj.visible=true                
             },
