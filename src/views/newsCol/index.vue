@@ -380,11 +380,13 @@ export default {
             },
             cancelUpdate(){
               this.editNewsColDialog.visible = false
+              this.curSelectedRow.id = undefined
             },
             doUpdate(){
               if(this.validateForUpdate()){
                 updateNewsCol(this.newsColInfoForUpdate).then(resp => {
                   this.editNewsColDialog.visible = false
+                  this.curSelectedRow.id = undefined
                   this.initList()//重新加载
                 })
               }
