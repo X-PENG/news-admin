@@ -81,7 +81,7 @@ import BtnGroupForEditor from './BtnGroupForEditor'
 import BtnGroupForReviewer from './BtnGroupForReviewer'
 import SuggestionBox from './SuggestionBox'
 import { saveNewsInfo, jumpToPreviewPage } from '@/utils/preview'
-import { createOrSaveNewsAsDraftOrCompleted } from '@/api/news/inputter'
+import { createNewsAsDraftOrCompleted, saveNewsAsDraftOrCompleted } from '@/api/news/inputter'
 import { validURL } from '@/utils/validate'
 import { saveOrSaveAndSubmitReview } from '@/api/news/editor'
 import { saveOrSaveAndReviewSuccess } from '@/api/news/reviewer'
@@ -230,14 +230,20 @@ export default {
       // console.log('监听到子组件的save-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
         this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
-          createOrSaveNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
-            if(resp) {
-              //如果是创建草稿，就会返回新创建的新闻的id
-              console.log('新的新闻的id = ' + resp)
-              //将新草稿的id赋给到this.postForm中，表示接下来的保存/上传操作将携带id，是更新操作
-              this.postForm.id = resp
-            }
-          })
+          if(!!this.postForm.id) {
+            //有id，则更新
+            saveNewsAsDraftOrCompleted(1, this.postForm);
+          }else {
+            //无id，则创建
+            createNewsAsDraftOrCompleted(1, this.postForm).then(resp => {
+              if(resp) {
+                //如果是创建草稿，就会返回新创建的新闻的id
+                console.log('新的新闻的id = ' + resp)
+                //将新草稿的id赋给到this.postForm中，表示接下来的保存/上传操作将携带id，是更新操作
+                this.postForm.id = resp
+              }
+            })
+          }
         }).catch(error => {
             this.$message({
               message: '取消',
@@ -250,10 +256,19 @@ export default {
       // console.log('监听到子组件的submit-by-inputter事件 外链='+this.postForm.externalUrl)
       if(this.validateForm()){
         this.validateExternalUrlAndPrompt(this.postForm.externalUrl).then(()=>{
-          createOrSaveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
-              //上传成功后，就向父组件发射创建新闻的事件
-              this.$emit('create-new-news')
-          })
+          if(!!this.postForm.id) {
+            //有id，则更新
+            saveNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
+                //上传成功后，就向父组件发射创建新闻的事件
+                this.$emit('create-new-news')
+            });
+          }else {
+            //无id，则创建
+            createNewsAsDraftOrCompleted(2, this.postForm).then(resp => {
+                //上传成功后，就向父组件发射创建新闻的事件
+                this.$emit('create-new-news')
+            });
+          }
         }).catch(error => {
             this.$message({
               message: '取消',

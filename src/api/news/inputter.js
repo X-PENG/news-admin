@@ -5,14 +5,28 @@
 import request from '@/utils/request'
 
 /**
- * 创建新闻或保存新闻，状态设为草稿或完成上传的状态
+ * 创建新闻，状态设为草稿或完成上传的状态
  * @param {*} tag 1-草稿；2-完成上传
  * @param {*} newsInfo 
  * @returns 
  */
-export function createOrSaveNewsAsDraftOrCompleted(tag, newsInfo){
+export function createNewsAsDraftOrCompleted(tag, newsInfo){
     return request({
-        url: `/management/news/upload/${tag}`,
+        url: `/management/news/upload/create/${tag}`,
+        method: 'post',
+        data: newsInfo
+    })    
+}
+
+/**
+ * 保存新闻，状态设为草稿或完成上传的状态
+ * @param {*} tag 1-草稿；2-完成上传
+ * @param {*} newsInfo 
+ * @returns 
+ */
+ export function saveNewsAsDraftOrCompleted(tag, newsInfo){
+    return request({
+        url: `/management/news/upload/save/${tag}`,
         method: 'post',
         data: newsInfo
     })    
